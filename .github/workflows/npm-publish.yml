@@ -1,0 +1,29 @@
+name: Publish npm package
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+
+env:
+  rootDir: ./packages/nextjs-cache-handler
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ env.rootDir }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version: lts/*
+          cache-dependency-path: ${{ env.rootDir }}/package-lock.json
+          registry-url: "https://registry.npmjs.org"
+      - run: npm ci
+      - run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}

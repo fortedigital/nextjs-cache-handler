@@ -4,16 +4,16 @@
     "name": "Forte_ Digital",
     "url": "https://fortedigital.com"
   },
-  "version": "1.0.0-alpha",
+  "homepage": "https://github.com/fortedigital/nextjs-cache-handler",
+  "bugs": "https://github.com/fortedigital/nextjs-cache-handler/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fortedigital/nextjs-cache-handler.git"
+  },
+  "version": "1.0.0",
   "type": "module",
   "license": "MIT",
   "description": "Next.js cache handlers",
-  "homepage": "TODO",
-  "bugs": "TODO",
-  "repository": {
-    "type": "git",
-    "url": "TODO"
-  },
   "exports": {
     "./*": {
       "require": "./dist/*.cjs",
@@ -67,5 +67,8 @@
   "distTags": [
     "next13.5",
     "next14"
-  ]
+  ],
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.24.0"
+  }
 }
