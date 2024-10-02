@@ -1,0 +1,11 @@
+export const endOfLine = "crlf";
+export const printWidth = 100;
+export const tabWidth = 4;
+export const useTabs = false;
+export const singleQuote = false;
+export const semi = true;
+export const trailingComma = "all";
+export const bracketSpacing = true;
+export const bracketSameLine = false;
+export const arrowParens = "always";
+export const quoteProps = "as-needed";

@@ -1,0 +1,39 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
+  "plugins": ["@typescript-eslint", "simple-import-sort"],
+  "rules": {
+    "@typescript-eslint/no-unused-vars": ["error"],
+    "array-callback-return": "warn",
+    "eqeqeq": "warn",
+    "func-style": [
+      "warn",
+      "declaration",
+      {
+        "allowArrowFunctions": true
+      }
+    ],
+    "import/first": "warn",
+    "import/newline-after-import": "warn",
+    "import/no-duplicates": "warn",
+    "multiline-comment-style": ["warn", "starred-block"],
+    "no-lonely-if": "warn",
+    "no-self-compare": "error",
+    "no-template-curly-in-string": "error",
+    "no-unreachable-loop": "warn",
+    "no-unused-expressions": "warn",
+    "no-unused-vars": "off",
+    "no-var": "error",
+    "prefer-arrow-callback": "warn",
+    "prefer-const": "warn",
+    "prefer-promise-reject-errors": "warn",
+    "prefer-spread": "warn",
+    "simple-import-sort/exports": "warn",
+    "simple-import-sort/imports": "warn"
+  },
+  "root": true
+}
