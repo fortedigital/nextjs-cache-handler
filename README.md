@@ -1,3 +1,5 @@
+![NPM Version](https://img.shields.io/npm/v/%40fortedigital%2Fnextjs-cache-handler)
+
 # @fortedigital/nextjs-cache-handler
 
 This package extends the functionality of [`@neshca/cache-handler`](https://www.npmjs.com/package/@neshca/cache-handler) by providing additional cache handlers for specialized use cases, specifically for Redis-based caching solutions. The original `@neshca/cache-handler` offers a robust caching API for Next.js applications, and this package introduces two new handlers for managing Redis cache with different expiration strategies and tag-based revalidation.
@@ -10,13 +12,13 @@ To install this package along with its dependencies:
 npm install @fortedigital/nextjs-cache-handler
 ```
 
-Ensure that you have already set up `@neshca/cache-handler` before integrating these extended handlers.
+Package depends on the original `@neshca/cache-handler` package - you can use anything provided by it by using import/require from `@neshca/cache-handler`.
 
 ## Handlers
 
 ### 1. `redis-strings`
 
-This handler is designed to manage cache operations using Redis strings. It supports key-based and tag-based caching with flexible expiration strategies.
+This handler is designed to manage cache operations using Redis strings. It supports key-based and tag-based caching with flexible expiration strategies. Opposite to `@neshca/cache-handler`, `@fortedigital/nextjs-cache-handler`'s implementation does not have a memory leak caused by endlessly growing shared key hashmap, by adding another hashmap with TTL for shared keys entries. It also has more reliable revalidateTagQuerySize default value - 10_000 - preventing long tag revalidatation requests with large caches.
 
 #### Features:
 
