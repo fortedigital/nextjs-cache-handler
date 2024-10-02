@@ -16,7 +16,13 @@ jobs:
       run:
         working-directory: ${{ env.rootDir }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy README file to package directory
+        run: |
+          cp ../../README.md .
+
       - uses: actions/setup-node@v4
         with:
           cache: npm
