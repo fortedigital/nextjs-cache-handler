@@ -32,21 +32,17 @@ export default function bufferStringDecorator(handler: Handler): Handler {
     },
 
     async set(key, data) {
-      try {
-        const routeValue = data.value as CachedRouteValue;
-        if (routeValue?.kind === "ROUTE" && routeValue?.body) {
-          await handler.set(key, {
-            ...data,
-            value: {
-              ...data.value,
-              body: routeValue.body.toString(),
-            } as ConvertedStaticPageCacheData,
-          });
-        } else {
-          await handler.set(key, data);
-        }
-      } catch (e) {
-        console.error(e);
+      const routeValue = data.value as CachedRouteValue;
+      if (routeValue?.kind === "ROUTE" && routeValue?.body) {
+        await handler.set(key, {
+          ...data,
+          value: {
+            ...data.value,
+            body: routeValue.body.toString(),
+          } as ConvertedStaticPageCacheData,
+        });
+      } else {
+        await handler.set(key, data);
       }
     },
 
