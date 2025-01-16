@@ -54,6 +54,16 @@ const compositeHandler = createHandler({
 });
 ```
 
+### 3. `buffer-string-decorator`
+
+#### Features:
+
+This cache handler converts buffers from cached route values to strings on save and back to buffers on read.
+
+Next 15 decided to change type of data.value.body property from String to Buffer which conflicts with how data is serialized to redis.
+
+It is recommended to use this handler with `redis-strings` in Next 15.
+
 ## Reference to Original Package
 
 This package builds upon the core functionality provided by [`@neshca/cache-handler`](https://www.npmjs.com/package/@neshca/cache-handler). You can find more information about the core library, including usage examples and API documentation, at the [official documentation page](https://caching-tools.github.io/next-shared-cache).

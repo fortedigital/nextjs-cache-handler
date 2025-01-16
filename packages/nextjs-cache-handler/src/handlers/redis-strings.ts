@@ -195,7 +195,7 @@ export default function createHandler({
   const revalidatedTagsKey = keyPrefix + REVALIDATED_TAGS_KEY;
 
   return {
-    name: "apopro-redis-strings",
+    name: "forte-digital-redis-strings",
     async get(key, { implicitTags }) {
       assertClientIsReady();
 

@@ -39,7 +39,7 @@ export default function createHandler({
   }
 
   return {
-    name: "apopro-composite",
+    name: "forte-digital-composite",
 
     async get(key, ctx) {
       for (const handler of handlers) {
