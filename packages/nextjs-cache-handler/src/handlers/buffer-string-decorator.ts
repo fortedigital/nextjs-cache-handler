@@ -19,7 +19,11 @@ export default function bufferStringDecorator(handler: Handler): Handler {
       const hit = await handler.get(key, ctx);
       const staticPageCacheData =
         hit?.value as unknown as ConvertedStaticPageCacheData;
-      if (hit?.value && staticPageCacheData?.body) {
+      if (
+        hit?.value &&
+        (staticPageCacheData?.kind as string) === "APP_ROUTE" &&
+        staticPageCacheData?.body
+      ) {
         return {
           ...hit,
           value: {
@@ -32,8 +36,8 @@ export default function bufferStringDecorator(handler: Handler): Handler {
     },
 
     async set(key, data) {
-      const routeValue = data.value as CachedRouteValue;
-      if (routeValue?.kind === "ROUTE" && routeValue?.body) {
+      const routeValue = data.value as unknown as CachedRouteValue;
+      if ((routeValue?.kind as string) === "APP_ROUTE" && routeValue?.body) {
         await handler.set(key, {
           ...data,
           value: {
