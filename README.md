@@ -53,7 +53,7 @@ Use this:
 
 ```
 const { Next15CacheHandler } = require("@fortedigital/next-15-cache-handler");
-module.exports = Next15CacheHandler;
+module.exports = new Next15CacheHandler();
 ```
 
 ## Handlers
