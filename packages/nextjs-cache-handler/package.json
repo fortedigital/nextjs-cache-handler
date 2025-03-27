@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/fortedigital/nextjs-cache-handler.git"
   },
-  "version": "1.1.2-alpha-2",
+  "version": "1.1.3",
   "type": "module",
   "license": "MIT",
   "description": "Next.js cache handlers",
@@ -22,6 +22,9 @@
   },
   "typesVersions": {
     "*": {
+      "Next15CacheHandler": [
+        "dist/next-15-cache-handler.d.ts"
+      ],
       "composite": [
         "dist/composite.d.ts"
       ],
@@ -69,7 +72,8 @@
   },
   "distTags": [
     "next13.5",
-    "next14"
+    "next14",
+    "next15"
   ],
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.37.0"

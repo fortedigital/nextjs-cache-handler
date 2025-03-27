@@ -14,6 +14,48 @@ npm install @fortedigital/nextjs-cache-handler
 
 Package depends on the original `@neshca/cache-handler` package - you can use anything provided by it by using import/require from `@neshca/cache-handler`.
 
+## Next 15 Support
+
+As `@neshca/cache-handler` does not officially support Next 15+ yet, we try to keep up with Next and prepare more or less temporary workarounds. At some point we will either create a fork of `@neshca/cache-handler` to fully support Next 15 or it gets updated by the maintainers. As for now we're building a set of decorators/workarounds you can use to build cache solutions for Next 15. We might need to do a full-blown rework which will be marked with a proper major version upgrade.
+
+### String buffer breaking change
+
+If you use Redis Strings cache handler with Next15+ you need to decorate the default Redis String handler with a buffer converter like this:
+
+```
+// ...
+const redisCacheHandler = createRedisHandler({
+    client: redisClient,
+    keyPrefix: "nextjs:",
+});
+
+return {
+  handlers: [
+    createBufferStringHandler(redisCacheHandler)
+  ]
+}
+
+// ...
+```
+
+Read more about this in Handlers section below.
+
+### Revalidate fetch breaking change
+
+Instead of:
+
+```
+const { CacheHandler } = require("@neshca/cache-handler");
+module.exports = CacheHandler;
+```
+
+Use this:
+
+```
+const { Next15CacheHandler } = require("@fortedigital/next-15-cache-handler");
+module.exports = Next15CacheHandler;
+```
+
 ## Handlers
 
 ### 1. `redis-strings`

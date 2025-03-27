@@ -102,10 +102,7 @@ export default function createHandler({
       return;
     }
 
-    await client.unlink(
-      getTimeoutRedisCommandOptions(timeoutMs),
-      keysToDelete,
-    );
+    await client.unlink(getTimeoutRedisCommandOptions(timeoutMs), keysToDelete);
 
     const updateTagsOperation = client.hDel(
       { isolated: true, ...getTimeoutRedisCommandOptions(timeoutMs) },
@@ -119,10 +116,7 @@ export default function createHandler({
       tagsToDelete,
     );
 
-    await Promise.all([
-      updateTtlOperation,
-      updateTagsOperation,
-    ]);
+    await Promise.all([updateTtlOperation, updateTagsOperation]);
   }
 
   async function revalidateSharedKeys() {
@@ -161,10 +155,7 @@ export default function createHandler({
       return;
     }
 
-    await client.unlink(
-      getTimeoutRedisCommandOptions(timeoutMs),
-      keysToDelete,
-    );
+    await client.unlink(getTimeoutRedisCommandOptions(timeoutMs), keysToDelete);
 
     const updateTtlOperation = client.hDel(
       {
@@ -184,10 +175,7 @@ export default function createHandler({
       tagsAndTtlToDelete,
     );
 
-    await Promise.all([
-      updateTagsOperation,
-      updateTtlOperation,
-    ]);
+    await Promise.all([updateTagsOperation, updateTtlOperation]);
   }
 
   const revalidatedTagsKey = keyPrefix + REVALIDATED_TAGS_KEY;
@@ -268,10 +256,7 @@ export default function createHandler({
           )
         : undefined;
 
-        await Promise.all([
-          setTagsOperation,
-          setSharedTtlOperation,
-        ]);
+      await Promise.all([setTagsOperation, setSharedTtlOperation]);
 
       switch (keyExpirationStrategy) {
         case "EXAT": {
@@ -306,10 +291,7 @@ export default function createHandler({
         }
       }
 
-        await Promise.all([
-          setOperation,
-          expireOperation,
-        ]);
+      await Promise.all([setOperation, expireOperation]);
     },
     async revalidateTag(tag) {
       assertClientIsReady();
