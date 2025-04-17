@@ -82,14 +82,14 @@ export default function bufferStringDecorator(handler: Handler): Handler {
         const appPageValue = value as unknown as CachedAppPageValue;
 
         if (appPageValue?.rscData) {
-          // Convert rscData string to Buffer
+          // Convert rscData Buffer to string
           // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L76
 
           appPageData.rscData = appPageValue.rscData.toString();
         }
 
         if (appPageValue?.segmentData) {
-          // Convert segmentData Record<string, string> to Map<string, Buffer>
+          // Convert segmentData Map<string, Buffer> to Record<string, string>
           // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L80
 
           appPageData.segmentData = Object.fromEntries(
