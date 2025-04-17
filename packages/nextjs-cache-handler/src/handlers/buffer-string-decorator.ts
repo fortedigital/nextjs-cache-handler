@@ -1,9 +1,10 @@
 import { Handler } from "@neshca/cache-handler";
-import { CachedRouteValue } from "next/dist/server/response-cache";
-
-type ConvertedStaticPageCacheData = CachedRouteValue & {
-  body: string;
-};
+import {
+  CachedAppPageValue,
+  CachedRouteValue,
+  ConvertedCachedAppPageValue,
+  ConvertedCachedRouteValue,
+} from "./buffer-string-decorator.types";
 
 /*
  * This cache handler converts buffers from cached route values to strings on save and back to buffers on read.
@@ -17,37 +18,89 @@ export default function bufferStringDecorator(handler: Handler): Handler {
 
     async get(key, ctx) {
       const hit = await handler.get(key, ctx);
-      const staticPageCacheData =
-        hit?.value as unknown as ConvertedStaticPageCacheData;
-      if (
-        hit?.value &&
-        (staticPageCacheData?.kind as string) === "APP_ROUTE" &&
-        staticPageCacheData?.body
-      ) {
-        return {
-          ...hit,
-          value: {
-            ...hit.value,
-            body: Buffer.from(staticPageCacheData.body, "utf-8"),
-          },
-        };
+
+      if (!hit?.value) {
+        return hit;
       }
+
+      const value = hit.value;
+      const kind = value?.kind as string;
+
+      if (kind === "APP_ROUTE") {
+        const appRouteData = value as unknown as ConvertedCachedRouteValue;
+
+        if (appRouteData?.body) {
+          // Convert body string to Buffer
+          // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L97
+
+          const appRouteValue = value as unknown as CachedRouteValue;
+          appRouteValue.body = Buffer.from(appRouteData.body, "utf-8");
+        }
+      } else if (kind === "APP_PAGE") {
+        const appPageData = value as unknown as ConvertedCachedAppPageValue;
+        const appPageValue = value as unknown as CachedAppPageValue;
+
+        if (appPageData.rscData) {
+          // Convert rscData string to Buffer
+          // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L76
+
+          appPageValue.rscData = Buffer.from(appPageData.rscData, "utf-8");
+        }
+
+        if (appPageData.segmentData) {
+          // Convert segmentData Record<string, string> to Map<string, Buffer>
+          // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L80
+
+          appPageValue.segmentData = new Map(
+            Object.entries(appPageData.segmentData).map(([key, value]) => [
+              key,
+              Buffer.from(value, "utf-8"),
+            ]),
+          );
+        }
+      }
+
       return hit;
     },
 
     async set(key, data) {
-      const routeValue = data.value as unknown as CachedRouteValue;
-      if ((routeValue?.kind as string) === "APP_ROUTE" && routeValue?.body) {
-        await handler.set(key, {
-          ...data,
-          value: {
-            ...data.value,
-            body: routeValue.body.toString(),
-          } as ConvertedStaticPageCacheData,
-        });
-      } else {
-        await handler.set(key, data);
+      const value = data.value;
+      const kind = value?.kind as string;
+
+      if (kind === "APP_ROUTE") {
+        const appRouteData = value as unknown as ConvertedCachedRouteValue;
+        const appRouteValue = value as unknown as CachedRouteValue;
+
+        if (appRouteValue?.body) {
+          // Convert body Buffer to string
+          // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L97
+
+          appRouteData.body = appRouteValue.body.toString();
+        }
+      } else if (kind === "APP_PAGE") {
+        const appPageData = value as unknown as ConvertedCachedAppPageValue;
+        const appPageValue = value as unknown as CachedAppPageValue;
+
+        if (appPageValue?.rscData) {
+          // Convert rscData string to Buffer
+          // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L76
+
+          appPageData.rscData = appPageValue.rscData.toString();
+        }
+
+        if (appPageValue?.segmentData) {
+          // Convert segmentData Record<string, string> to Map<string, Buffer>
+          // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L80
+
+          appPageData.segmentData = Object.fromEntries(
+            Array.from(appPageValue.segmentData.entries()).map(
+              ([key, value]) => [key, value.toString()],
+            ),
+          );
+        }
       }
+
+      await handler.set(key, data);
     },
 
     async revalidateTag(tag) {
