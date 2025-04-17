@@ -112,9 +112,14 @@ const compositeHandler = createHandler({
 
 This cache handler converts buffers from cached route values to strings on save and back to buffers on read.
 
-Next 15 decided to change type of data.value.body property from String to Buffer which conflicts with how data is serialized to redis.
+Next 15 decided to change types of some properties from String to Buffer which conflicts with how data is serialized to redis. It is recommended to use this handler with `redis-strings` in Next 15 as this handler make the following adjustment.
 
-It is recommended to use this handler with `redis-strings` in Next 15.
+- **Converts `body` `Buffer` to `string`**  
+  See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L97
+- **Converts `rscData` `string` to `Buffer`**  
+  See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L76
+- **Converts `segmentData` `Record<string, string>` to `Map<string, Buffer>`**  
+  See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L80
 
 ## Full example
 

@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/fortedigital/nextjs-cache-handler.git"
   },
-  "version": "1.2.0-alpha",
+  "version": "1.2.0",
   "type": "module",
   "license": "MIT",
   "description": "Next.js cache handlers",
@@ -53,8 +53,8 @@
     "lru-cache": "11.1.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.23.0",
-    "@types/node": "22.13.14",
+    "@eslint/js": "^9.24.0",
+    "@types/node": "22.14.1",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.10.0",
@@ -63,8 +63,8 @@
     "rimraf": "6.0.1",
     "tsup": "^8.4.0",
     "tsx": "4.19.3",
-    "typescript": "^5.8.2",
-    "typescript-eslint": "^8.28.0"
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.30.1"
   },
   "peerDependencies": {
     "next": ">=13.5.1",
@@ -76,7 +76,7 @@
     "next15"
   ],
   "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.37.0"
+    "@rollup/rollup-linux-x64-gnu": "^4.40.0"
   },
   "files": [
     "dist"
