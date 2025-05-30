@@ -606,7 +606,7 @@ export class CacheHandler implements NextCacheHandler {
 
     if (cachedData?.value?.kind === "APP_ROUTE") {
       cachedData.value.body = Buffer.from(
-        cachedData.value.body as unknown as string,
+        cachedData.value.body.toString(),
         "base64",
       );
     }
