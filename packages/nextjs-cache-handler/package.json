@@ -18,7 +18,7 @@
     "next",
     "redis"
   ],
-  "version": "2.0.0-canary1",
+  "version": "2.0.0-canary2",
   "type": "module",
   "license": "MIT",
   "description": "Next.js cache handlers",
@@ -54,6 +54,7 @@
   },
   "scripts": {
     "build": "tsup --dts-resolve",
+    "prepare": "npm run build",
     "clean": "rimraf ./dist ./.turbo ./node_modules",
     "dev": "tsup --watch",
     "test": "tsx --test src/**/*.test.ts",

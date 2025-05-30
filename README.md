@@ -30,7 +30,7 @@ const { CacheHandler } = require("@fortedigital/nextjs-cache-handler");
 module.exports = CacheHandler;
 ```
 
-####
+`createBufferStringHandler` was built into `redis-strings` and does not need to be used with Next 15 anymore.
 
 ### 1.2.x -> ^1.3.x
 
