@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/fortedigital/nextjs-cache-handler.git"
   },
-  "version": "1.3.0-canary3",
+  "version": "1.3.0-canary4",
   "type": "module",
   "license": "MIT",
   "description": "Next.js cache handlers",
