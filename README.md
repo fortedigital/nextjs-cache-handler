@@ -8,6 +8,14 @@ This package was initially built on top of [`@neshca/cache-handler`](https://www
 
 ### 1.x.x -> 2.x.x
 
+Starting with 2.0.0 we require Next 15 and Redis 5.
+
+Upgrade Next and Redis in your project to:
+```
+"next": ">=15.2.4",
+"redis": ">= 5.1.1"
+```
+
 1.x.x
 
 ```
