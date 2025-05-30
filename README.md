@@ -8,6 +8,23 @@ This package was initially built on top of [`@neshca/cache-handler`](https://www
 
 ### 1.x.x -> 2.x.x
 
+Starting with 2.0.0 we require Next 15 and Redis 5.
+
+Remove `redis` from your dependencies if you don't need anything other than `@redis/client`. Then install `@redis/client`.
+
+Upgrade Next and Redis in your project to:
+```
+"next": ">=15.2.4",
+"@redis/client": ">= 5.1.1"
+```
+
+OR if you need full `redis` package
+
+```
+"next": ">=15.2.4",
+"redis": ">= 5.1.1"
+```
+
 1.x.x
 
 ```
@@ -22,7 +39,7 @@ const { CacheHandler } = require("@fortedigital/nextjs-cache-handler");
 module.exports = CacheHandler;
 ```
 
-####
+`createBufferStringHandler` was built into `redis-strings` and does not need to be used with Next 15 anymore.
 
 ### 1.2.x -> ^1.3.x
 
@@ -65,6 +82,8 @@ if (process.env.NEXT_RUNTIME === "nodejs") {
 ```
 
 ## Installation
+
+If you come from Next 14 or below, ensure to flush Redis cache before you run the project with this library. Cache format between Next 15 and Next <14 are not compatible!
 
 ## Next 15 Support and migration from `@neshca/cache-handler`
 
