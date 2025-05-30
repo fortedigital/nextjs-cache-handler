@@ -2,7 +2,9 @@ MIT License
 
 This extension is developed and maintained by Forte Digital. For more information about our products and services, visit [our website](https://fortedigital.com).
 
-Copyright (c) 2024 Forte_ Digital and Arseny Kruglikov
+This package was built on top of [`@neshca/cache-handler`](https://www.npmjs.com/package/@neshca/cache-handler).
+
+Copyright (c) 2024 Forte\_ Digital and Arseny Kruglikov
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

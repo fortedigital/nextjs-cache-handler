@@ -1,19 +1,5 @@
-import type { CacheHandlerValue, Handler } from "@neshca/cache-handler";
-
-export type CreateCompositeHandlerOptions = {
-  /**
-   * A collection of handlers to manage the cache.
-   */
-  handlers: Handler[];
-
-  /**
-   * Strategy to determine which handler to use for the set operation.
-   * Defaults to the first handler if not provided.
-   * @param data - The data to be saved in one of the handlers. See {@link CacheHandlerValue}.
-   * @returns The index of the handler for the set operation.
-   */
-  setStrategy: (data: CacheHandlerValue) => number;
-};
+import { Handler } from "./cache-handler.types";
+import { CreateCompositeHandlerOptions } from "./composite.types";
 
 /**
  * Creates a composite Handler for managing cache operations using multiple handlers.
@@ -39,7 +25,7 @@ export default function createHandler({
   }
 
   return {
-    name: "forte-digital-composite",
+    name: "composite",
 
     async get(key, ctx) {
       for (const handler of handlers) {
