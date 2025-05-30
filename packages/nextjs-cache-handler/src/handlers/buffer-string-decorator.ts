@@ -1,10 +1,12 @@
-import { Handler } from "@neshca/cache-handler";
+import { CacheHandlerValue, Handler } from "@neshca/cache-handler";
 import {
   CachedAppPageValue,
   CachedRouteValue,
   ConvertedCachedAppPageValue,
   ConvertedCachedRouteValue,
 } from "./buffer-string-decorator.types";
+import { IncrementalCacheValue } from "next/dist/server/response-cache";
+import { Next15IncrementalCacheValue } from "./next15.types";
 
 /*
  * This cache handler converts buffers from cached route values to strings on save and back to buffers on read.
@@ -64,7 +66,12 @@ export default function bufferStringDecorator(handler: Handler): Handler {
     },
 
     async set(key, data) {
-      const value = data.value;
+      if (!data?.value) {
+        await handler.set(key, data);
+        return;
+      }
+
+      const value = { ...data.value };
       const kind = value?.kind as string;
 
       if (kind === "APP_ROUTE") {
@@ -100,7 +107,7 @@ export default function bufferStringDecorator(handler: Handler): Handler {
         }
       }
 
-      await handler.set(key, data);
+      await handler.set(key, { ...data, value });
     },
 
     async revalidateTag(tag) {

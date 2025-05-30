@@ -1,34 +1,9 @@
 import { CacheHandler } from "@neshca/cache-handler";
-import { OutgoingHttpHeaders } from "http";
 import {
-  CachedRedirectValue,
-  CachedImageValue,
   CachedFetchValue,
   IncrementalCacheValue,
 } from "next/dist/server/response-cache";
-
-export interface CachedRouteValue {
-  kind: "APP_ROUTE";
-  body: Buffer;
-  status: number;
-  headers: OutgoingHttpHeaders;
-}
-
-interface IncrementalCachedPageValue {
-  kind: "APP_PAGE";
-  html: string;
-  pageData: Object;
-  postponed: string | undefined;
-  headers: OutgoingHttpHeaders | undefined;
-  status: number | undefined;
-}
-
-export type Next15IncrementalCacheValue =
-  | CachedRedirectValue
-  | IncrementalCachedPageValue
-  | CachedImageValue
-  | CachedFetchValue
-  | CachedRouteValue;
+import { Next15IncrementalCacheValue } from "./next15.types";
 
 /*
  * Use this handler in Next 15.2.1 and higher after `revalidate` property had been removed from context object.
