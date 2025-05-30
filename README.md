@@ -64,6 +64,32 @@ CacheHandler.onCreation(() => {
 module.exports = new Next15CacheHandler();
 ```
 
+### Instrumentation
+
+Instead of:
+
+```js
+export async function register() {
+ if (process.env.NEXT_RUNTIME === 'nodejs') {
+   const { registerInitialCache } = await import('@neshca/cache-handler/instrumentation');
+   const CacheHandler = (await import('../cache-handler.mjs')).default;
+   await registerInitialCache(CacheHandler);
+ }
+}
+```
+
+Use this:
+
+```js
+export async function register() {
+ if (process.env.NEXT_RUNTIME === 'nodejs') {
+   const { registerInitialCache } = await import('@fortedigital/nextjs-cache-handler/instrumentation');
+   const CacheHandler = (await import('../cache-handler.mjs')).default;
+   await registerInitialCache(CacheHandler);
+ }
+}
+```
+
 ## Handlers
 
 ### 1. `redis-strings`
@@ -134,14 +160,14 @@ const { PHASE_PRODUCTION_BUILD } = require("next/constants");
 
 // @fortedigital/nextjs-cache-handler dependencies
 const createCompositeHandler =
-  require("@fortedigital/nextjs-cache-handler/composite").default;
+  require("@fortedigital/nextjs-cache-handler/handlers/composite").default;
 const createRedisHandler =
-  require("@fortedigital/nextjs-cache-handler/redis-strings").default;
+  require("@fortedigital/nextjs-cache-handler/handlers/redis-strings").default;
 const createBufferStringHandler =
-  require("@fortedigital/nextjs-cache-handler/buffer-string-decorator").default;
+  require("@fortedigital/nextjs-cache-handler/handlers/buffer-string-decorator").default;
 const {
   Next15CacheHandler,
-} = require("@fortedigital/nextjs-cache-handler/next-15-cache-handler");
+} = require("@fortedigital/nextjs-cache-handler");
 
 // Usual onCreation from @neshca/cache-handler
 CacheHandler.onCreation(() => {
