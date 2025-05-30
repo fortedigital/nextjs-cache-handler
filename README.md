@@ -10,7 +10,16 @@ This package was initially built on top of [`@neshca/cache-handler`](https://www
 
 Starting with 2.0.0 we require Next 15 and Redis 5.
 
+Remove `redis` from your dependencies if you don't need anything other than `@redis/client`. Then install `@redis/client`.
+
 Upgrade Next and Redis in your project to:
+```
+"next": ">=15.2.4",
+"@redis/client": ">= 5.1.1"
+```
+
+OR if you need full `redis` package
+
 ```
 "next": ">=15.2.4",
 "redis": ">= 5.1.1"

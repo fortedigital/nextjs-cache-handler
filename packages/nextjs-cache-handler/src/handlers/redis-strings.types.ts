@@ -1,4 +1,4 @@
-import type { createClient } from "redis";
+import type { createClient } from "@redis/client";
 
 export type CachedRouteValue = {
   kind: "APP_ROUTE";

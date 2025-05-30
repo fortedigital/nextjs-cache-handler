@@ -83,7 +83,7 @@
   },
   "peerDependencies": {
     "next": ">=15.2.4",
-    "redis": ">= 5.1.1"
+    "@redis/client": ">= 5.1.1"
   },
   "distTags": [
     "next15"
