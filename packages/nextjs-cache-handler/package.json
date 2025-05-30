@@ -16,8 +16,8 @@
   "description": "Next.js cache handlers",
   "exports": {
     ".": {
-      "require": "./dist/cache-handler.cjs",
-      "import": "./dist/cache-handler.js"
+      "require": "./dist/handlers/next-15-cache-handler.cjs",
+      "import": "./dist/handlers/next-15-cache-handler.js"
     },
     "./*": {
       "require": "./dist/handlers/*.cjs",

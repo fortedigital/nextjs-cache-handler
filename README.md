@@ -160,11 +160,11 @@ const { PHASE_PRODUCTION_BUILD } = require("next/constants");
 
 // @fortedigital/nextjs-cache-handler dependencies
 const createCompositeHandler =
-  require("@fortedigital/nextjs-cache-handler/handlers/composite").default;
+  require("@fortedigital/nextjs-cache-handler/composite").default;
 const createRedisHandler =
-  require("@fortedigital/nextjs-cache-handler/handlers/redis-strings").default;
+  require("@fortedigital/nextjs-cache-handler/redis-strings").default;
 const createBufferStringHandler =
-  require("@fortedigital/nextjs-cache-handler/handlers/buffer-string-decorator").default;
+  require("@fortedigital/nextjs-cache-handler/buffer-string-decorator").default;
 const {
   Next15CacheHandler,
 } = require("@fortedigital/nextjs-cache-handler");
