@@ -1,13 +1,15 @@
 import { REVALIDATED_TAGS_KEY } from "../constants";
 import { isImplicitTag } from "../helpers/isImplicitTag";
 import { CacheHandlerValue, Handler } from "./cache-handler.types";
-import { IncrementalCacheValue } from "next/dist/server/response-cache/types";
+import {
+  CachedRouteValue,
+  IncrementalCachedAppPageValue,
+  IncrementalCacheValue,
+} from "next/dist/server/response-cache/types";
 import {
   CreateRedisStringsHandlerOptions,
-  ConvertedCachedRouteValue,
-  CachedRouteValue,
-  ConvertedCachedAppPageValue,
-  CachedAppPageValue,
+  RedisCompliantCachedAppPageValue,
+  RedisCompliantCachedRouteValue,
 } from "./redis-strings.types";
 
 /**
@@ -327,7 +329,7 @@ export default function createHandler({
     const kind = value?.kind;
 
     if (kind === "APP_ROUTE") {
-      const appRouteData = value as unknown as ConvertedCachedRouteValue;
+      const appRouteData = value as unknown as RedisCompliantCachedRouteValue;
       const appRouteValue = value as unknown as CachedRouteValue;
 
       if (appRouteValue?.body) {
@@ -336,8 +338,8 @@ export default function createHandler({
         appRouteData.body = appRouteValue.body.toString();
       }
     } else if (kind === "APP_PAGE") {
-      const appPageData = value as unknown as ConvertedCachedAppPageValue;
-      const appPageValue = value as unknown as CachedAppPageValue;
+      const appPageData = value as unknown as RedisCompliantCachedAppPageValue;
+      const appPageValue = value as unknown as IncrementalCachedAppPageValue;
 
       if (appPageValue?.rscData) {
         // Convert rscData Buffer to string
@@ -363,7 +365,7 @@ export default function createHandler({
     const kind = value?.kind;
 
     if (kind === "APP_ROUTE") {
-      const appRouteData = value as unknown as ConvertedCachedRouteValue;
+      const appRouteData = value as unknown as RedisCompliantCachedRouteValue;
 
       if (appRouteData?.body) {
         // Convert body string to Buffer
@@ -372,8 +374,8 @@ export default function createHandler({
         appRouteValue.body = Buffer.from(appRouteData.body, "utf-8");
       }
     } else if (kind === "APP_PAGE") {
-      const appPageData = value as unknown as ConvertedCachedAppPageValue;
-      const appPageValue = value as unknown as CachedAppPageValue;
+      const appPageData = value as unknown as RedisCompliantCachedAppPageValue;
+      const appPageValue = value as unknown as IncrementalCachedAppPageValue;
 
       if (appPageData.rscData) {
         // Convert rscData string to Buffer

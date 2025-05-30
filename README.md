@@ -83,6 +83,8 @@ if (process.env.NEXT_RUNTIME === "nodejs") {
 
 ## Installation
 
+If you come from Next 14 or below, ensure to flush Redis cache before you run the project with this library. Cache format between Next 15 and Next <14 are not compatible!
+
 ## Next 15 Support and migration from `@neshca/cache-handler`
 
 As `@neshca/cache-handler` does not officially support Next 15+ yet, we try to keep up with Next and prepare more or less temporary workarounds. At some point we will either create a fork of `@neshca/cache-handler` to fully support Next 15 or it gets updated by the maintainers. As for now we're building a set of decorators/workarounds you can use to build cache solutions for Next 15. We might need to do a full-blown rework which will be marked with a proper major version upgrade.
