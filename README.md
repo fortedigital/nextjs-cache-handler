@@ -4,6 +4,43 @@
 
 This package extends the functionality of [`@neshca/cache-handler`](https://www.npmjs.com/package/@neshca/cache-handler) by providing additional cache handlers for specialized use cases, specifically for Redis-based caching solutions. The original `@neshca/cache-handler` offers a robust caching API for Next.js applications, and this package introduces two new handlers for managing Redis cache with different expiration strategies and tag-based revalidation.
 
+
+## Migration
+
+### 1.2.x -> 1.3.x
+
+#### cache-handler
+1.2.x
+```
+const { Next15CacheHandler } = require("@fortedigital/nextjs-cache-handler/next-15-cache-handler");
+module.exports = new Next15CacheHandler();
+```
+
+1.3.x
+```
+const { Next15CacheHandler } = require("@fortedigital/nextjs-cache-handler");
+module.exports = Next15CacheHandler;
+```
+
+#### instrumentation
+1.2.x
+```
+if (process.env.NEXT_RUNTIME === "nodejs") {
+    const { registerInitialCache } = await import('@neshca/cache-handler/instrumentation')
+    const CacheHandler = (await import("./cache-handler.js")).default;
+    await registerInitialCache(CacheHandler);
+}
+```
+
+1.3.x
+```
+if (process.env.NEXT_RUNTIME === "nodejs") {
+    const { registerInitialCache } = await import("@fortedigital/nextjs-cache-handler/instrumentation");
+    const CacheHandler = (await import("./cache-handler.js")).default;
+    await registerInitialCache(CacheHandler);
+}
+```
+
 ## Installation
 
 To install this package along with its dependencies:
@@ -53,15 +90,13 @@ Use this:
 
 ```js
 const { CacheHandler } = require("@neshca/cache-handler");
-const {
-  Next15CacheHandler,
-} = require("@fortedigital/nextjs-cache-handler/next-15-cache-handler");
+const { Next15CacheHandler } = require("@fortedigital/nextjs-cache-handler");
 
 CacheHandler.onCreation(() => {
   // your usual setup
 });
 
-module.exports = new Next15CacheHandler();
+module.exports = Next15CacheHandler;
 ```
 
 ### Instrumentation
@@ -270,7 +305,7 @@ CacheHandler.onCreation(() => {
   return global.cacheHandlerConfigPromise;
 });
 
-module.exports = new Next15CacheHandler();
+module.exports = Next15CacheHandler;
 ```
 
 ## Reference to Original Package

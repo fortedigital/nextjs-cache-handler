@@ -30,23 +30,20 @@
   },
   "typesVersions": {
     "*": {
-      "Next15CacheHandler": [
+      "*": [
         "dist/handlers/next-15-cache-handler.d.ts"
+      ],
+      "instrumentation": [
+        "dist/instrumentation/instrumentation.d.ts"
+      ],
+      "buffer-string-decorator": [
+        "dist/handlers/buffer-string-decorator.d.ts"
       ],
       "composite": [
         "dist/handlers/composite.d.ts"
       ],
       "redis-strings": [
         "dist/handlers/redis-strings.d.ts"
-      ],
-      "buffer-string-decorator": [
-        "dist/handlers/buffer-string-decorator.d.ts"
-      ],
-      "instrumentation/instrumentation": [
-        "dist/instrumentation/instrumentation.d.ts"
-      ],
-      "instrumentation/register-initial-cache": [
-        "dist/instrumentation/register-initial-cache.d.ts"
       ]
     }
   },

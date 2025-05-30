@@ -3,14 +3,13 @@ import path from "node:path";
 import { PRERENDER_MANIFEST, SERVER_DIRECTORY } from "next/constants";
 import type { PrerenderManifest } from "next/dist/build";
 import { CACHE_ONE_YEAR } from "next/dist/lib/constants";
-import { CacheHandler } from "@neshca/cache-handler";
-import { Next15CacheHandler } from "../handlers/next-15-cache-handler";
 import { Revalidate } from "next/dist/server/lib/revalidate";
 import { CachedFetchValue } from "next/dist/server/response-cache";
 import type { OutgoingHttpHeaders } from "http";
 import { getTagsFromHeaders } from "./helpers/getTagsFromHeaders";
 
-type CacheHandlerType = typeof import('../handlers/next-15-cache-handler').Next15CacheHandler;
+type CacheHandlerType =
+  typeof import("../handlers/next-15-cache-handler").Next15CacheHandler;
 
 type NextRouteMetadata = {
   status: number | undefined;
@@ -202,7 +201,7 @@ export async function registerInitialCache(
       await cacheHandler.set(
         cachePath,
         {
-          kind: "ROUTE",
+          kind: "APP_ROUTE",
           body,
           headers: meta.headers,
           status: meta.status,
@@ -289,7 +288,7 @@ export async function registerInitialCache(
       await cacheHandler.set(
         cachePath,
         {
-          kind: "PAGE",
+          kind: "APP_PAGE",
           html,
           pageData,
           postponed: meta?.postponed,
