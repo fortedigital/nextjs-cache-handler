@@ -1,4 +1,4 @@
-import type { CacheHandlerValue, Handler } from "@neshca/cache-handler";
+import { CacheHandlerValue, Handler } from "./cache-handler.types";
 
 export type CreateCompositeHandlerOptions = {
   /**
@@ -39,7 +39,7 @@ export default function createHandler({
   }
 
   return {
-    name: "forte-digital-composite",
+    name: "composite",
 
     async get(key, ctx) {
       for (const handler of handlers) {
