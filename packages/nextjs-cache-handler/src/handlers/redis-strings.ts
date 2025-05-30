@@ -55,11 +55,11 @@ export default function createHandler({
   sharedTagsKey = "__sharedTags__",
   sharedTagsTtlKey = "__sharedTagsTtl__",
   timeoutMs = 5_000,
-  keyExpirationStrategy = "EXPIREAT",
+  keyExpirationStrategy = "EXAT",
   revalidateTagQuerySize = 10_000,
 }: CreateRedisStringsHandlerOptions): Handler {
   function assertClientIsReady(): void {
-    if (!client.isReady) {
+    if (!client.withAbortSignal(AbortSignal.timeout(timeoutMs)).isReady) {
       throw new Error(
         "Redis client is not ready yet or connection is lost. Keep trying...",
       );
@@ -67,26 +67,33 @@ export default function createHandler({
   }
 
   async function revalidateTags(tag: string) {
+    assertClientIsReady();
+
+    if (isImplicitTag(tag)) {
+      await client
+        .withAbortSignal(AbortSignal.timeout(timeoutMs))
+        .hSet(revalidatedTagsKey, tag, Date.now());
+    }
+
     const tagsMap: Map<string, string[]> = new Map();
 
-    let cursor = 0;
+    let cursor = "0";
 
     const hScanOptions = { COUNT: revalidateTagQuerySize };
 
     do {
       const remoteTagsPortion = await client.hScan(
-        getTimeoutRedisCommandOptions(timeoutMs),
         keyPrefix + sharedTagsKey,
         cursor,
         hScanOptions,
       );
 
-      for (const { field, value } of remoteTagsPortion.tuples) {
+      for (const { field, value } of remoteTagsPortion.entries) {
         tagsMap.set(field, JSON.parse(value));
       }
 
       cursor = remoteTagsPortion.cursor;
-    } while (cursor !== 0);
+    } while (cursor !== "0");
 
     const keysToDelete: string[] = [];
     const tagsToDelete: string[] = [];
@@ -102,21 +109,23 @@ export default function createHandler({
       return;
     }
 
-    await client.unlink(getTimeoutRedisCommandOptions(timeoutMs), keysToDelete);
+    const deleteKeysOperation = client
+      .withAbortSignal(AbortSignal.timeout(timeoutMs))
+      .unlink(keysToDelete);
 
-    const updateTagsOperation = client.hDel(
-      { isolated: true, ...getTimeoutRedisCommandOptions(timeoutMs) },
-      keyPrefix + sharedTagsKey,
-      tagsToDelete,
-    );
+    const updateTagsOperation = client
+      .withAbortSignal(AbortSignal.timeout(timeoutMs))
+      .hDel(keyPrefix + sharedTagsKey, tagsToDelete);
 
-    const updateTtlOperation = client.hDel(
-      { isolated: true, ...getTimeoutRedisCommandOptions(timeoutMs) },
-      keyPrefix + sharedTagsTtlKey,
-      tagsToDelete,
-    );
+    const updateTtlOperation = client
+      .withAbortSignal(AbortSignal.timeout(timeoutMs))
+      .hDel(keyPrefix + sharedTagsTtlKey, tagsToDelete);
 
-    await Promise.all([updateTtlOperation, updateTagsOperation]);
+    await Promise.all([
+      deleteKeysOperation,
+      updateTtlOperation,
+      updateTagsOperation,
+    ]);
   }
 
   async function revalidateSharedKeys() {
@@ -127,12 +136,9 @@ export default function createHandler({
     const hScanOptions = { COUNT: revalidateTagQuerySize };
 
     do {
-      const remoteTagsPortion = await client.hScan(
-        getTimeoutRedisCommandOptions(timeoutMs),
-        keyPrefix + sharedTagsTtlKey,
-        cursor,
-        hScanOptions,
-      );
+      const remoteTagsPortion = await client
+        .withAbortSignal(AbortSignal.timeout(timeoutMs))
+        .hScan(keyPrefix + sharedTagsTtlKey, cursor, hScanOptions);
 
       for (const { field, value } of remoteTagsPortion.tuples) {
         ttlMap.set(field, Number(value));
@@ -155,25 +161,29 @@ export default function createHandler({
       return;
     }
 
-    await client.unlink(getTimeoutRedisCommandOptions(timeoutMs), keysToDelete);
+    await client
+      .withAbortSignal(AbortSignal.timeout(timeoutMs))
+      .unlink(keysToDelete);
 
-    const updateTtlOperation = client.hDel(
-      {
-        isolated: true,
-        ...getTimeoutRedisCommandOptions(timeoutMs),
-      },
-      keyPrefix + sharedTagsTtlKey,
-      tagsAndTtlToDelete,
-    );
+    const updateTtlOperation = client
+      .withAbortSignal(AbortSignal.timeout(timeoutMs))
+      .hDel(
+        {
+          isolated: true,
+        },
+        keyPrefix + sharedTagsTtlKey,
+        tagsAndTtlToDelete,
+      );
 
-    const updateTagsOperation = client.hDel(
-      {
-        isolated: true,
-        ...getTimeoutRedisCommandOptions(timeoutMs),
-      },
-      keyPrefix + sharedTagsKey,
-      tagsAndTtlToDelete,
-    );
+    const updateTagsOperation = client
+      .withAbortSignal(AbortSignal.timeout(timeoutMs))
+      .hDel(
+        {
+          isolated: true,
+        },
+        keyPrefix + sharedTagsKey,
+        tagsAndTtlToDelete,
+      );
 
     await Promise.all([updateTagsOperation, updateTtlOperation]);
   }
@@ -185,10 +195,9 @@ export default function createHandler({
     async get(key, { implicitTags }) {
       assertClientIsReady();
 
-      const result = await client.get(
-        getTimeoutRedisCommandOptions(timeoutMs),
-        keyPrefix + key,
-      );
+      const result = await client
+        .withAbortSignal(AbortSignal.timeout(timeoutMs))
+        .get(keyPrefix + key);
 
       if (!result) {
         return null;
@@ -200,17 +209,14 @@ export default function createHandler({
         return null;
       }
 
-      const sharedTagKeyExists = await client.hExists(
-        getTimeoutRedisCommandOptions(timeoutMs),
-        keyPrefix + sharedTagsKey,
-        key,
-      );
+      const sharedTagKeyExists = await client
+        .withAbortSignal(AbortSignal.timeout(timeoutMs))
+        .hExists(keyPrefix + sharedTagsKey, key);
 
       if (!sharedTagKeyExists) {
-        await client.unlink(
-          getTimeoutRedisCommandOptions(timeoutMs),
-          keyPrefix + key,
-        );
+        await client
+          .withAbortSignal(AbortSignal.timeout(timeoutMs))
+          .unlink(keyPrefix + key);
 
         return null;
       }
@@ -221,21 +227,18 @@ export default function createHandler({
         return cacheValue;
       }
 
-      const revalidationTimes = await client.hmGet(
-        getTimeoutRedisCommandOptions(timeoutMs),
-        revalidatedTagsKey,
-        Array.from(combinedTags),
-      );
+      const revalidationTimes = await client
+        .withAbortSignal(AbortSignal.timeout(timeoutMs))
+        .hmGet(revalidatedTagsKey, Array.from(combinedTags));
 
       for (const timeString of revalidationTimes) {
         if (
           timeString &&
           Number.parseInt(timeString, 10) > cacheValue.lastModified
         ) {
-          await client.unlink(
-            getTimeoutRedisCommandOptions(timeoutMs),
-            keyPrefix + key,
-          );
+          await client
+            .withAbortSignal(AbortSignal.timeout(timeoutMs))
+            .unlink(keyPrefix + key);
 
           return null;
         }
@@ -246,56 +249,53 @@ export default function createHandler({
     async set(key, cacheHandlerValue) {
       assertClientIsReady();
 
-      const options = getTimeoutRedisCommandOptions(timeoutMs);
-
       let setOperation: Promise<string | null>;
       let expireOperation: Promise<boolean> | undefined;
       const lifespan = cacheHandlerValue.lifespan;
 
       const setTagsOperation =
         cacheHandlerValue.tags.length > 0
-          ? client.hSet(
-              options,
-              keyPrefix + sharedTagsKey,
-              key,
-              JSON.stringify(cacheHandlerValue.tags),
-            )
+          ? client
+              .withAbortSignal(AbortSignal.timeout(timeoutMs))
+              .hSet(
+                keyPrefix + sharedTagsKey,
+                key,
+                JSON.stringify(cacheHandlerValue.tags),
+              )
           : undefined;
 
       const setSharedTtlOperation = lifespan
-        ? client.hSet(
-            options,
-            keyPrefix + sharedTagsTtlKey,
-            key,
-            lifespan.expireAt,
-          )
+        ? client
+            .withAbortSignal(AbortSignal.timeout(timeoutMs))
+            .hSet(keyPrefix + sharedTagsTtlKey, key, lifespan.expireAt)
         : undefined;
 
       await Promise.all([setTagsOperation, setSharedTtlOperation]);
 
       switch (keyExpirationStrategy) {
         case "EXAT": {
-          setOperation = client.set(
-            options,
-            keyPrefix + key,
-            JSON.stringify(cacheHandlerValue),
-            typeof lifespan?.expireAt === "number"
-              ? {
-                  EXAT: lifespan.expireAt,
-                }
-              : undefined,
-          );
+          setOperation = client
+            .withAbortSignal(AbortSignal.timeout(timeoutMs))
+            .set(
+              keyPrefix + key,
+              JSON.stringify(cacheHandlerValue),
+              typeof lifespan?.expireAt === "number"
+                ? {
+                    EXAT: lifespan.expireAt,
+                  }
+                : undefined,
+            );
           break;
         }
         case "EXPIREAT": {
-          setOperation = client.set(
-            options,
-            keyPrefix + key,
-            JSON.stringify(cacheHandlerValue),
-          );
+          setOperation = client
+            .withAbortSignal(AbortSignal.timeout(timeoutMs))
+            .set(keyPrefix + key, JSON.stringify(cacheHandlerValue));
 
           expireOperation = lifespan
-            ? client.expireAt(options, keyPrefix + key, lifespan.expireAt)
+            ? client
+                .withAbortSignal(AbortSignal.timeout(timeoutMs))
+                .expireAt(keyPrefix + key, lifespan.expireAt)
             : undefined;
           break;
         }
@@ -316,25 +316,25 @@ export default function createHandler({
        * The revalidation process is done by the CacheHandler class on the next get operation.
        */
       if (isImplicitTag(tag)) {
-        await client.hSet(
-          getTimeoutRedisCommandOptions(timeoutMs),
-          revalidatedTagsKey,
-          tag,
-          Date.now(),
-        );
+        await client
+          .withAbortSignal(AbortSignal.timeout(timeoutMs))
+          .hSet(revalidatedTagsKey, tag, Date.now());
       }
 
       await Promise.all([revalidateTags(tag), revalidateSharedKeys()]);
     },
     async delete(key) {
-      await client.unlink(
-        getTimeoutRedisCommandOptions(timeoutMs),
-        keyPrefix + key,
-      );
+      await client
+        .withAbortSignal(AbortSignal.timeout(timeoutMs))
+        .unlink(keyPrefix + key);
 
       await Promise.all([
-        client.hDel(keyPrefix + sharedTagsKey, key),
-        client.hDel(keyPrefix + sharedTagsTtlKey, key),
+        client
+          .withAbortSignal(AbortSignal.timeout(timeoutMs))
+          .hDel(keyPrefix + sharedTagsKey, key),
+        client
+          .withAbortSignal(AbortSignal.timeout(timeoutMs))
+          .hDel(keyPrefix + sharedTagsTtlKey, key),
       ]);
     },
   };
