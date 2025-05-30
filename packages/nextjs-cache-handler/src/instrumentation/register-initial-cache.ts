@@ -3,13 +3,12 @@ import path from "node:path";
 import { PRERENDER_MANIFEST, SERVER_DIRECTORY } from "next/constants";
 import type { PrerenderManifest } from "next/dist/build";
 import { CACHE_ONE_YEAR } from "next/dist/lib/constants";
-import { Revalidate } from "next/dist/server/lib/revalidate";
 import { CachedFetchValue } from "next/dist/server/response-cache";
 import type { OutgoingHttpHeaders } from "http";
-import { getTagsFromHeaders } from "./helpers/getTagsFromHeaders";
+import { getTagsFromHeaders } from "../helpers/getTagsFromHeaders";
+import { Revalidate } from "../handlers/cache-handler.types";
 
-type CacheHandlerType =
-  typeof import("../handlers/next-15-cache-handler").Next15CacheHandler;
+type CacheHandlerType = typeof import("../handlers/cache-handler").CacheHandler;
 
 type NextRouteMetadata = {
   status: number | undefined;
@@ -68,7 +67,7 @@ export type RegisterInitialCacheOptions = {
  * ```js
  * export async function register() {
  *  if (process.env.NEXT_RUNTIME === 'nodejs') {
- *    const { registerInitialCache } = await import('@neshca/cache-handler/instrumentation');
+ *    const { registerInitialCache } = await import('@fortedigital/nextjs-cache-handler/instrumentation');
  *    // Assuming that your CacheHandler configuration is in the root of the project and the instrumentation is in the src directory.
  *    // Please adjust the path accordingly.
  *    // CommonJS CacheHandler configuration is also supported.
@@ -201,14 +200,14 @@ export async function registerInitialCache(
       await cacheHandler.set(
         cachePath,
         {
-          kind: "APP_ROUTE",
+          kind: "APP_ROUTE" as unknown as any, // TODO check casting
           body,
           headers: meta.headers,
           status: meta.status,
         },
         {
           revalidate,
-          neshca_lastModified: lastModified,
+          internal_lastModified: lastModified,
           tags: getTagsFromHeaders(meta.headers),
         },
       );
@@ -288,14 +287,14 @@ export async function registerInitialCache(
       await cacheHandler.set(
         cachePath,
         {
-          kind: "APP_PAGE",
+          kind: "APP_PAGE" as unknown as any, // TODO check casting
           html,
           pageData,
           postponed: meta?.postponed,
           headers: meta?.headers,
           status: meta?.status,
         },
-        { revalidate, neshca_lastModified: lastModified },
+        { revalidate, internal_lastModified: lastModified },
       );
     } catch (error) {
       if (debug) {
@@ -390,7 +389,7 @@ export async function registerInitialCache(
     try {
       await cacheHandler.set(fetchCacheKey, fetchCache, {
         revalidate,
-        neshca_lastModified: lastModified,
+        internal_lastModified: lastModified,
         tags: fetchCache.tags,
       });
     } catch (error) {
