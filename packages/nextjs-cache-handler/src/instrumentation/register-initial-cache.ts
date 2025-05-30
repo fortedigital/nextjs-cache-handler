@@ -10,6 +10,8 @@ import { CachedFetchValue } from "next/dist/server/response-cache";
 import type { OutgoingHttpHeaders } from "http";
 import { getTagsFromHeaders } from "./helpers/getTagsFromHeaders";
 
+type CacheHandlerType = typeof import('../handlers/next-15-cache-handler').Next15CacheHandler;
+
 type NextRouteMetadata = {
   status: number | undefined;
   headers: OutgoingHttpHeaders | undefined;
@@ -80,7 +82,7 @@ export type RegisterInitialCacheOptions = {
  *
  */
 export async function registerInitialCache(
-  CacheHandler: CacheHandler,
+  CacheHandler: CacheHandlerType,
   options: RegisterInitialCacheOptions = {},
 ) {
   const debug = typeof process.env.NEXT_PRIVATE_DEBUG_CACHE !== "undefined";
@@ -125,11 +127,11 @@ export async function registerInitialCache(
     dev: process.env.NODE_ENV === "development",
   };
 
-  let cacheHandler: CacheHandler;
+  let cacheHandler: InstanceType<CacheHandlerType>;
 
   try {
-    cacheHandler = new Next15CacheHandler(
-      context as ConstructorParameters<typeof Next15CacheHandler>[0],
+    cacheHandler = new CacheHandler(
+      context as ConstructorParameters<typeof CacheHandler>[0],
     );
   } catch (error) {
     if (debug) {
