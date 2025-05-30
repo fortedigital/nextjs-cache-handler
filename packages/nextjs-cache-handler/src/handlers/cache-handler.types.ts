@@ -4,6 +4,7 @@ import type {
 } from "next/dist/server/lib/incremental-cache";
 
 import type FileSystemCache from "next/dist/server/lib/incremental-cache/file-system-cache";
+
 /**
  * A set of time periods and timestamps for controlling cache behavior.
  */
@@ -49,7 +50,7 @@ export type CacheHandlerParametersGetWithTags = [
  * Represents an internal Next.js metadata for a `get` method.
  * This metadata is available in the `get` method of the cache handler.
  */
-type HandlerGetMeta = {
+export type HandlerGetMeta = {
   /**
    * An array of tags that are implicitly associated with the cache entry.
    */
@@ -58,7 +59,7 @@ type HandlerGetMeta = {
 /**
  * Represents a cache Handler.
  */
-type Handler = {
+export type Handler = {
   /**
    * A descriptive name for the cache Handler.
    */
@@ -159,7 +160,7 @@ type Handler = {
 /**
  * Represents the parameters for Time-to-Live (TTL) configuration.
  */
-type TTLParameters = {
+export type TTLParameters = {
   /**
    * The time in seconds for when the cache entry becomes stale.
    *
@@ -182,7 +183,7 @@ type TTLParameters = {
 /**
  * Configuration options for the {@link CacheHandler}.
  */
-type CacheHandlerConfig = {
+export type CacheHandlerConfig = {
   /**
    * An array of cache instances that conform to the Handler interface.
    * Multiple caches can be used to implement various caching strategies or layers.
@@ -196,7 +197,7 @@ type CacheHandlerConfig = {
 /**
  * Contextual information provided during cache creation, including server directory paths and environment mode.
  */
-type CacheCreationContext = {
+export type CacheCreationContext = {
   /**
    * The absolute path to the Next.js server directory.
    */
@@ -249,7 +250,7 @@ type CacheCreationContext = {
  * @returns Either a {@link CacheHandlerConfig} object or a Promise that resolves to a {@link CacheHandlerConfig},
  * specifying how the cache should be configured.
  */
-type OnCreationHook = (
+export type OnCreationHook = (
   context: CacheCreationContext,
 ) => Promise<CacheHandlerConfig> | CacheHandlerConfig;
 declare class CacheHandler implements NextCacheHandler {
@@ -344,13 +345,4 @@ export type CacheHandlerValue = NextCacheHandlerValue & {
    * Consider these pages as always fresh and never stale.
    */
   lifespan: LifespanParameters | null;
-};
-
-export {
-  type CacheCreationContext,
-  CacheHandler,
-  type CacheHandlerConfig,
-  type Handler,
-  type OnCreationHook,
-  type TTLParameters,
 };
