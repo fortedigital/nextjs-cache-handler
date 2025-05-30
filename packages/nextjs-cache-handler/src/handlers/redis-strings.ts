@@ -1,38 +1,16 @@
-import type { CacheHandlerValue, Handler } from "@neshca/cache-handler";
-import {
-  getTimeoutRedisCommandOptions,
-  isImplicitTag,
-} from "@neshca/cache-handler/helpers";
-import type { CreateRedisStackHandlerOptions } from "@neshca/cache-handler/redis-stack";
-
 import { REVALIDATED_TAGS_KEY } from "../constants";
-
-export type CreateRedisStringsHandlerOptions =
-  CreateRedisStackHandlerOptions & {
-    /**
-     * Key for storing cache tags.
-     *
-     * @default '__sharedTags__'
-     */
-    sharedTagsKey?: string;
-    /**
-     * Key for storing cache tags TTL.
-     *
-     * @default '__sharedTagsTtl__'
-     */
-    sharedTagsTtlKey?: string;
-    /**
-     * Determines the expiration strategy for cache keys.
-     *
-     * - `'EXAT'`: Uses the `EXAT` option of the `SET` command to set expiration time.
-     * - `'EXPIREAT'`: Uses the `EXPIREAT` command to set expiration time.
-     *
-     * By default, it uses `'EXPIREAT'` for compatibility with older versions.
-     *
-     * @default 'EXPIREAT'
-     */
-    keyExpirationStrategy?: "EXAT" | "EXPIREAT";
-  };
+import { isImplicitTag } from "../helpers/isImplicitTag";
+import { CacheHandlerValue, Handler } from "./cache-handler.types";
+import {
+  CachedRouteValue,
+  IncrementalCachedAppPageValue,
+  IncrementalCacheValue,
+} from "next/dist/server/response-cache/types";
+import {
+  CreateRedisStringsHandlerOptions,
+  RedisCompliantCachedAppPageValue,
+  RedisCompliantCachedRouteValue,
+} from "./redis-strings.types";
 
 /**
  * Creates a Handler for handling cache operations using Redis strings.
@@ -59,34 +37,41 @@ export default function createHandler({
   revalidateTagQuerySize = 10_000,
 }: CreateRedisStringsHandlerOptions): Handler {
   function assertClientIsReady(): void {
-    if (!client.isReady) {
+    if (!client.withAbortSignal(AbortSignal.timeout(timeoutMs)).isReady) {
       throw new Error(
         "Redis client is not ready yet or connection is lost. Keep trying...",
       );
     }
   }
 
-  async function revalidateTags(tag: string) {
+  async function revalidateTag(tag: string) {
+    assertClientIsReady();
+
+    if (isImplicitTag(tag)) {
+      await client
+        .withAbortSignal(AbortSignal.timeout(timeoutMs))
+        .hSet(revalidatedTagsKey, tag, Date.now());
+    }
+
     const tagsMap: Map<string, string[]> = new Map();
 
-    let cursor = 0;
+    let cursor = "0";
 
     const hScanOptions = { COUNT: revalidateTagQuerySize };
 
     do {
       const remoteTagsPortion = await client.hScan(
-        getTimeoutRedisCommandOptions(timeoutMs),
         keyPrefix + sharedTagsKey,
         cursor,
         hScanOptions,
       );
 
-      for (const { field, value } of remoteTagsPortion.tuples) {
+      for (const { field, value } of remoteTagsPortion.entries) {
         tagsMap.set(field, JSON.parse(value));
       }
 
       cursor = remoteTagsPortion.cursor;
-    } while (cursor !== 0);
+    } while (cursor !== "0");
 
     const keysToDelete: string[] = [];
     const tagsToDelete: string[] = [];
@@ -102,44 +87,45 @@ export default function createHandler({
       return;
     }
 
-    await client.unlink(getTimeoutRedisCommandOptions(timeoutMs), keysToDelete);
+    const deleteKeysOperation = client
+      .withAbortSignal(AbortSignal.timeout(timeoutMs))
+      .unlink(keysToDelete);
 
-    const updateTagsOperation = client.hDel(
-      { isolated: true, ...getTimeoutRedisCommandOptions(timeoutMs) },
-      keyPrefix + sharedTagsKey,
-      tagsToDelete,
-    );
+    const updateTagsOperation = client
+      .withAbortSignal(AbortSignal.timeout(timeoutMs))
+      .hDel(keyPrefix + sharedTagsKey, tagsToDelete);
 
-    const updateTtlOperation = client.hDel(
-      { isolated: true, ...getTimeoutRedisCommandOptions(timeoutMs) },
-      keyPrefix + sharedTagsTtlKey,
-      tagsToDelete,
-    );
+    const updateTtlOperation = client
+      .withAbortSignal(AbortSignal.timeout(timeoutMs))
+      .hDel(keyPrefix + sharedTagsTtlKey, tagsToDelete);
 
-    await Promise.all([updateTtlOperation, updateTagsOperation]);
+    await Promise.all([
+      deleteKeysOperation,
+      updateTtlOperation,
+      updateTagsOperation,
+    ]);
   }
 
   async function revalidateSharedKeys() {
+    assertClientIsReady();
+
     const ttlMap = new Map();
 
-    let cursor = 0;
+    let cursor = "0";
 
     const hScanOptions = { COUNT: revalidateTagQuerySize };
 
     do {
-      const remoteTagsPortion = await client.hScan(
-        getTimeoutRedisCommandOptions(timeoutMs),
-        keyPrefix + sharedTagsTtlKey,
-        cursor,
-        hScanOptions,
-      );
+      const remoteTagsPortion = await client
+        .withAbortSignal(AbortSignal.timeout(timeoutMs))
+        .hScan(keyPrefix + sharedTagsTtlKey, cursor, hScanOptions);
 
-      for (const { field, value } of remoteTagsPortion.tuples) {
+      for (const { field, value } of remoteTagsPortion.entries) {
         ttlMap.set(field, Number(value));
       }
 
       cursor = remoteTagsPortion.cursor;
-    } while (cursor !== 0);
+    } while (cursor !== "0");
 
     const tagsAndTtlToDelete = [];
     const keysToDelete = [];
@@ -155,40 +141,35 @@ export default function createHandler({
       return;
     }
 
-    await client.unlink(getTimeoutRedisCommandOptions(timeoutMs), keysToDelete);
+    const deleteKeysOperation = client
+      .withAbortSignal(AbortSignal.timeout(timeoutMs))
+      .unlink(keysToDelete);
 
-    const updateTtlOperation = client.hDel(
-      {
-        isolated: true,
-        ...getTimeoutRedisCommandOptions(timeoutMs),
-      },
-      keyPrefix + sharedTagsTtlKey,
-      tagsAndTtlToDelete,
-    );
+    const updateTtlOperation = client
+      .withAbortSignal(AbortSignal.timeout(timeoutMs))
+      .hDel(keyPrefix + sharedTagsTtlKey, tagsAndTtlToDelete);
 
-    const updateTagsOperation = client.hDel(
-      {
-        isolated: true,
-        ...getTimeoutRedisCommandOptions(timeoutMs),
-      },
-      keyPrefix + sharedTagsKey,
-      tagsAndTtlToDelete,
-    );
+    const updateTagsOperation = client
+      .withAbortSignal(AbortSignal.timeout(timeoutMs))
+      .hDel(keyPrefix + sharedTagsKey, tagsAndTtlToDelete);
 
-    await Promise.all([updateTagsOperation, updateTtlOperation]);
+    await Promise.all([
+      deleteKeysOperation,
+      updateTagsOperation,
+      updateTtlOperation,
+    ]);
   }
 
   const revalidatedTagsKey = keyPrefix + REVALIDATED_TAGS_KEY;
 
   return {
-    name: "forte-digital-redis-strings",
+    name: "redis-strings",
     async get(key, { implicitTags }) {
       assertClientIsReady();
 
-      const result = await client.get(
-        getTimeoutRedisCommandOptions(timeoutMs),
-        keyPrefix + key,
-      );
+      const result = await client
+        .withAbortSignal(AbortSignal.timeout(timeoutMs))
+        .get(keyPrefix + key);
 
       if (!result) {
         return null;
@@ -200,17 +181,16 @@ export default function createHandler({
         return null;
       }
 
-      const sharedTagKeyExists = await client.hExists(
-        getTimeoutRedisCommandOptions(timeoutMs),
-        keyPrefix + sharedTagsKey,
-        key,
-      );
+      convertStringsToBuffers(cacheValue);
+
+      const sharedTagKeyExists = await client
+        .withAbortSignal(AbortSignal.timeout(timeoutMs))
+        .hExists(keyPrefix + sharedTagsKey, key);
 
       if (!sharedTagKeyExists) {
-        await client.unlink(
-          getTimeoutRedisCommandOptions(timeoutMs),
-          keyPrefix + key,
-        );
+        await client
+          .withAbortSignal(AbortSignal.timeout(timeoutMs))
+          .unlink(keyPrefix + key);
 
         return null;
       }
@@ -221,21 +201,18 @@ export default function createHandler({
         return cacheValue;
       }
 
-      const revalidationTimes = await client.hmGet(
-        getTimeoutRedisCommandOptions(timeoutMs),
-        revalidatedTagsKey,
-        Array.from(combinedTags),
-      );
+      const revalidationTimes = await client
+        .withAbortSignal(AbortSignal.timeout(timeoutMs))
+        .hmGet(revalidatedTagsKey, Array.from(combinedTags));
 
       for (const timeString of revalidationTimes) {
         if (
           timeString &&
           Number.parseInt(timeString, 10) > cacheValue.lastModified
         ) {
-          await client.unlink(
-            getTimeoutRedisCommandOptions(timeoutMs),
-            keyPrefix + key,
-          );
+          await client
+            .withAbortSignal(AbortSignal.timeout(timeoutMs))
+            .unlink(keyPrefix + key);
 
           return null;
         }
@@ -246,53 +223,54 @@ export default function createHandler({
     async set(key, cacheHandlerValue) {
       assertClientIsReady();
 
-      const options = getTimeoutRedisCommandOptions(timeoutMs);
-
       let setOperation: Promise<string | null>;
-      let expireOperation: Promise<boolean> | undefined;
+      let expireOperation: Promise<number> | undefined;
       const lifespan = cacheHandlerValue.lifespan;
 
-      const setTagsOperation = client.hSet(
-        options,
-        keyPrefix + sharedTagsKey,
-        key,
-        JSON.stringify(cacheHandlerValue.tags ?? []),
-      );
+      if (cacheHandlerValue?.value) {
+        parseBuffersToStrings(cacheHandlerValue);
+      }
+
+      const setTagsOperation = client
+        .withAbortSignal(AbortSignal.timeout(timeoutMs))
+        .hSet(
+          keyPrefix + sharedTagsKey,
+          key,
+          JSON.stringify(cacheHandlerValue.tags ?? []),
+        );
 
       const setSharedTtlOperation = lifespan
-        ? client.hSet(
-            options,
-            keyPrefix + sharedTagsTtlKey,
-            key,
-            lifespan.expireAt,
-          )
+        ? client
+            .withAbortSignal(AbortSignal.timeout(timeoutMs))
+            .hSet(keyPrefix + sharedTagsTtlKey, key, lifespan.expireAt)
         : undefined;
 
       await Promise.all([setTagsOperation, setSharedTtlOperation]);
 
       switch (keyExpirationStrategy) {
         case "EXAT": {
-          setOperation = client.set(
-            options,
-            keyPrefix + key,
-            JSON.stringify(cacheHandlerValue),
-            typeof lifespan?.expireAt === "number"
-              ? {
-                  EXAT: lifespan.expireAt,
-                }
-              : undefined,
-          );
+          setOperation = client
+            .withAbortSignal(AbortSignal.timeout(timeoutMs))
+            .set(
+              keyPrefix + key,
+              JSON.stringify(cacheHandlerValue),
+              typeof lifespan?.expireAt === "number"
+                ? {
+                    EXAT: lifespan.expireAt,
+                  }
+                : undefined,
+            );
           break;
         }
         case "EXPIREAT": {
-          setOperation = client.set(
-            options,
-            keyPrefix + key,
-            JSON.stringify(cacheHandlerValue),
-          );
+          setOperation = client
+            .withAbortSignal(AbortSignal.timeout(timeoutMs))
+            .set(keyPrefix + key, JSON.stringify(cacheHandlerValue));
 
           expireOperation = lifespan
-            ? client.expireAt(options, keyPrefix + key, lifespan.expireAt)
+            ? client
+                .withAbortSignal(AbortSignal.timeout(timeoutMs))
+                .expireAt(keyPrefix + key, lifespan.expireAt)
             : undefined;
           break;
         }
@@ -313,26 +291,105 @@ export default function createHandler({
        * The revalidation process is done by the CacheHandler class on the next get operation.
        */
       if (isImplicitTag(tag)) {
-        await client.hSet(
-          getTimeoutRedisCommandOptions(timeoutMs),
-          revalidatedTagsKey,
-          tag,
-          Date.now(),
-        );
+        await client
+          .withAbortSignal(AbortSignal.timeout(timeoutMs))
+          .hSet(revalidatedTagsKey, tag, Date.now());
       }
 
-      await Promise.all([revalidateTags(tag), revalidateSharedKeys()]);
+      await Promise.all([revalidateTag(tag), revalidateSharedKeys()]);
     },
     async delete(key) {
-      await client.unlink(
-        getTimeoutRedisCommandOptions(timeoutMs),
-        keyPrefix + key,
-      );
+      await client
+        .withAbortSignal(AbortSignal.timeout(timeoutMs))
+        .unlink(keyPrefix + key);
 
       await Promise.all([
-        client.hDel(keyPrefix + sharedTagsKey, key),
-        client.hDel(keyPrefix + sharedTagsTtlKey, key),
+        client
+          .withAbortSignal(AbortSignal.timeout(timeoutMs))
+          .hDel(keyPrefix + sharedTagsKey, key),
+        client
+          .withAbortSignal(AbortSignal.timeout(timeoutMs))
+          .hDel(keyPrefix + sharedTagsTtlKey, key),
       ]);
     },
   };
+
+  function parseBuffersToStrings(cacheHandlerValue: CacheHandlerValue) {
+    if (!cacheHandlerValue?.value) {
+      return;
+    }
+
+    const value: IncrementalCacheValue | null = {
+      ...cacheHandlerValue.value,
+    };
+
+    const kind = value?.kind;
+
+    if (kind === "APP_ROUTE") {
+      const appRouteData = value as unknown as RedisCompliantCachedRouteValue;
+      const appRouteValue = value as unknown as CachedRouteValue;
+
+      if (appRouteValue?.body) {
+        // Convert body Buffer to string
+        // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L97
+        appRouteData.body = appRouteValue.body.toString();
+      }
+    } else if (kind === "APP_PAGE") {
+      const appPageData = value as unknown as RedisCompliantCachedAppPageValue;
+      const appPageValue = value as unknown as IncrementalCachedAppPageValue;
+
+      if (appPageValue?.rscData) {
+        // Convert rscData Buffer to string
+        // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L76
+        appPageData.rscData = appPageValue.rscData.toString();
+      }
+
+      if (appPageValue?.segmentData) {
+        // Convert segmentData Map<string, Buffer> to Record<string, string>
+        // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L80
+        appPageData.segmentData = Object.fromEntries(
+          Array.from(appPageValue.segmentData.entries()).map(([key, value]) => [
+            key,
+            value.toString(),
+          ]),
+        );
+      }
+    }
+  }
+
+  function convertStringsToBuffers(cacheValue: CacheHandlerValue) {
+    const value = cacheValue.value;
+    const kind = value?.kind;
+
+    if (kind === "APP_ROUTE") {
+      const appRouteData = value as unknown as RedisCompliantCachedRouteValue;
+
+      if (appRouteData?.body) {
+        // Convert body string to Buffer
+        // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L97
+        const appRouteValue = value as unknown as CachedRouteValue;
+        appRouteValue.body = Buffer.from(appRouteData.body, "utf-8");
+      }
+    } else if (kind === "APP_PAGE") {
+      const appPageData = value as unknown as RedisCompliantCachedAppPageValue;
+      const appPageValue = value as unknown as IncrementalCachedAppPageValue;
+
+      if (appPageData.rscData) {
+        // Convert rscData string to Buffer
+        // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L76
+        appPageValue.rscData = Buffer.from(appPageData.rscData, "utf-8");
+      }
+
+      if (appPageData.segmentData) {
+        // Convert segmentData Record<string, string> to Map<string, Buffer>
+        // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L80
+        appPageValue.segmentData = new Map(
+          Object.entries(appPageData.segmentData).map(([key, value]) => [
+            key,
+            Buffer.from(value, "utf-8"),
+          ]),
+        );
+      }
+    }
+  }
 }
