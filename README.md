@@ -2,28 +2,50 @@
 
 # @fortedigital/nextjs-cache-handler
 
-This package extends the functionality of [`@neshca/cache-handler`](https://www.npmjs.com/package/@neshca/cache-handler) by providing additional cache handlers for specialized use cases, specifically for Redis-based caching solutions. The original `@neshca/cache-handler` offers a robust caching API for Next.js applications, and this package introduces two new handlers for managing Redis cache with different expiration strategies and tag-based revalidation.
-
+This package was initially built on top of [`@neshca/cache-handler`](https://www.npmjs.com/package/@neshca/cache-handler) by providing additional cache handlers for specialized use cases, specifically for Redis-based caching solutions. The original `@neshca/cache-handler` stopped getting updated for Next 15 and above. This package addresses compatibility issues with Next 15 and onwards.
 
 ## Migration
 
-### 1.2.x -> 1.3.x
+### 1.x.x -> 2.x.x
 
-#### cache-handler
-1.2.x
+1.x.x
+
 ```
 const { Next15CacheHandler } = require("@fortedigital/nextjs-cache-handler/next-15-cache-handler");
 module.exports = new Next15CacheHandler();
 ```
 
-1.3.x
+2.x.x or higher
+
+```
+const { CacheHandler } = require("@fortedigital/nextjs-cache-handler");
+module.exports = CacheHandler;
+```
+
+####
+
+### 1.2.x -> ^1.3.x
+
+#### cache-handler
+
+1.2.x
+
+```
+const { Next15CacheHandler } = require("@fortedigital/nextjs-cache-handler/next-15-cache-handler");
+module.exports = new Next15CacheHandler();
+```
+
+^1.3.x
+
 ```
 const { Next15CacheHandler } = require("@fortedigital/nextjs-cache-handler");
 module.exports = Next15CacheHandler;
 ```
 
 #### instrumentation
+
 1.2.x
+
 ```
 if (process.env.NEXT_RUNTIME === "nodejs") {
     const { registerInitialCache } = await import('@neshca/cache-handler/instrumentation')
@@ -32,7 +54,8 @@ if (process.env.NEXT_RUNTIME === "nodejs") {
 }
 ```
 
-1.3.x
+^1.3.x
+
 ```
 if (process.env.NEXT_RUNTIME === "nodejs") {
     const { registerInitialCache } = await import("@fortedigital/nextjs-cache-handler/instrumentation");
@@ -43,39 +66,9 @@ if (process.env.NEXT_RUNTIME === "nodejs") {
 
 ## Installation
 
-To install this package along with its dependencies:
-
-```bash
-npm install @fortedigital/nextjs-cache-handler
-```
-
-Package depends on the original `@neshca/cache-handler` package - you can use anything provided by it by using import/require from `@neshca/cache-handler`.
-
-## Next 15 Support
+## Next 15 Support and migration from `@neshca/cache-handler`
 
 As `@neshca/cache-handler` does not officially support Next 15+ yet, we try to keep up with Next and prepare more or less temporary workarounds. At some point we will either create a fork of `@neshca/cache-handler` to fully support Next 15 or it gets updated by the maintainers. As for now we're building a set of decorators/workarounds you can use to build cache solutions for Next 15. We might need to do a full-blown rework which will be marked with a proper major version upgrade.
-
-### String buffer breaking change
-
-If you use Redis Strings cache handler with Next15+ you need to decorate the default Redis String handler with a buffer converter like this:
-
-```
-// ...
-const redisCacheHandler = createRedisHandler({
-    client: redisClient,
-    keyPrefix: "nextjs:",
-});
-
-return {
-  handlers: [
-    createBufferStringHandler(redisCacheHandler)
-  ]
-}
-
-// ...
-```
-
-Read more about this in Handlers section below.
 
 ### Revalidate fetch breaking change
 
@@ -83,20 +76,24 @@ Instead of:
 
 ```js
 const { CacheHandler } = require("@neshca/cache-handler");
+
+CacheHandler.onCreation(() => {
+  // your usual setup
+});
+
 module.exports = CacheHandler;
 ```
 
 Use this:
 
 ```js
-const { CacheHandler } = require("@neshca/cache-handler");
-const { Next15CacheHandler } = require("@fortedigital/nextjs-cache-handler");
+const { CacheHandler } = require("@fortedigital/nextjs-cache-handler");
 
 CacheHandler.onCreation(() => {
   // your usual setup
 });
 
-module.exports = Next15CacheHandler;
+module.exports = CacheHandler;
 ```
 
 ### Instrumentation
@@ -105,11 +102,13 @@ Instead of:
 
 ```js
 export async function register() {
- if (process.env.NEXT_RUNTIME === 'nodejs') {
-   const { registerInitialCache } = await import('@neshca/cache-handler/instrumentation');
-   const CacheHandler = (await import('../cache-handler.mjs')).default;
-   await registerInitialCache(CacheHandler);
- }
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    const { registerInitialCache } = await import(
+      "@neshca/cache-handler/instrumentation"
+    );
+    const CacheHandler = (await import("../cache-handler.mjs")).default;
+    await registerInitialCache(CacheHandler);
+  }
 }
 ```
 
@@ -117,11 +116,13 @@ Use this:
 
 ```js
 export async function register() {
- if (process.env.NEXT_RUNTIME === 'nodejs') {
-   const { registerInitialCache } = await import('@fortedigital/nextjs-cache-handler/instrumentation');
-   const CacheHandler = (await import('../cache-handler.mjs')).default;
-   await registerInitialCache(CacheHandler);
- }
+  if (process.env.NEXT_RUNTIME === "nodejs") {
+    const { registerInitialCache } = await import(
+      "@fortedigital/nextjs-cache-handler/instrumentation"
+    );
+    const CacheHandler = (await import("../cache-handler.mjs")).default;
+    await registerInitialCache(CacheHandler);
+  }
 }
 ```
 
@@ -167,26 +168,10 @@ const compositeHandler = createHandler({
 });
 ```
 
-### 3. `buffer-string-decorator`
-
-#### Features:
-
-This cache handler converts buffers from cached route values to strings on save and back to buffers on read.
-
-Next 15 decided to change types of some properties from String to Buffer which conflicts with how data is serialized to redis. It is recommended to use this handler with `redis-strings` in Next 15 as this handler make the following adjustment.
-
-- **Converts `body` `Buffer` to `string`**  
-  See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L97
-- **Converts `rscData` `string` to `Buffer`**  
-  See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L76
-- **Converts `segmentData` `Record<string, string>` to `Map<string, Buffer>`**  
-  See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L80
-
 ## Full example
 
 ```js
 // @neshca/cache-handler dependencies
-const { CacheHandler } = require("@neshca/cache-handler");
 const createLruHandler = require("@neshca/cache-handler/local-lru").default;
 
 // Next/Redis dependencies
@@ -200,9 +185,7 @@ const createRedisHandler =
   require("@fortedigital/nextjs-cache-handler/redis-strings").default;
 const createBufferStringHandler =
   require("@fortedigital/nextjs-cache-handler/buffer-string-decorator").default;
-const {
-  Next15CacheHandler,
-} = require("@fortedigital/nextjs-cache-handler");
+const { CacheHandler } = require("@fortedigital/nextjs-cache-handler");
 
 // Usual onCreation from @neshca/cache-handler
 CacheHandler.onCreation(() => {
@@ -305,7 +288,7 @@ CacheHandler.onCreation(() => {
   return global.cacheHandlerConfigPromise;
 });
 
-module.exports = Next15CacheHandler;
+module.exports = CacheHandler;
 ```
 
 ## Reference to Original Package
@@ -314,4 +297,4 @@ This package builds upon the core functionality provided by [`@neshca/cache-hand
 
 ## License
 
-This project is licensed under the [MIT License](./LICENSE), as is the original `@neshca/cache-handler` package.
+This project is licensed under the [MIT License](./LICENSE), as was the original `@neshca/cache-handler` package.

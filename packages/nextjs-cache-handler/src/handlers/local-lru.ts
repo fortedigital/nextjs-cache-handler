@@ -1,0 +1,151 @@
+import { LRUCache } from "lru-cache";
+import { CacheHandlerValue, Handler } from "./cache-handler.types";
+import { NEXT_CACHE_IMPLICIT_TAG_ID } from "../helpers/const";
+
+const MAX_ITEMS_NUMBER = 1000;
+const MAX_ITEM_SIZE_BYTES = 100 * 1024 * 1024;
+
+const DEFAULT_OPTIONS: LruCacheOptions = {
+  maxItemsNumber: MAX_ITEMS_NUMBER,
+  maxItemSizeBytes: MAX_ITEM_SIZE_BYTES,
+};
+
+/**
+ * Creates a configured LRUCache.
+ *
+ * @param calculateSizeCallback - A callback function to calculate the size of cache items.
+ *
+ * @param options - Optional configuration options for the cache.
+ *
+ * @returns A new instance of LRUCache.
+ */
+export function createConfiguredCache<CacheValueType extends object | string>(
+  calculateSizeCallback: (value: CacheValueType) => number,
+  {
+    maxItemsNumber = MAX_ITEMS_NUMBER,
+    maxItemSizeBytes = MAX_ITEM_SIZE_BYTES,
+  } = DEFAULT_OPTIONS,
+): LRUCache<string, CacheValueType> {
+  return new LRUCache<string, CacheValueType>({
+    max: maxItemsNumber,
+    maxSize: maxItemSizeBytes,
+    sizeCalculation: calculateSizeCallback,
+  });
+}
+
+/**
+ * Configuration options for the LRU cache.
+ */
+export type LruCacheOptions = {
+  /**
+   * Optional. Maximum number of items the cache can hold.
+   *
+   * @default 1000
+   */
+  maxItemsNumber?: number;
+  /**
+   * Optional. Maximum size in bytes for each item in the cache.
+   *
+   * @default 104857600 // 100 Mb
+   */
+  maxItemSizeBytes?: number;
+};
+/**
+ * @deprecated Use {@link LruCacheOptions} instead.
+ */
+export type LruCacheHandlerOptions = LruCacheOptions;
+
+/**
+ * Creates an LRU (Least Recently Used) cache Handler.
+ *
+ * This function initializes an LRU cache handler for managing cache operations.
+ * It allows setting a maximum number of items and maximum item size in bytes.
+ * The handler includes methods to get and set cache values.
+ * Revalidation is handled by the `CacheHandler` class.
+ *
+ * @param options - The configuration options for the LRU cache handler. See {@link LruCacheOptions}.
+ *
+ * @returns An object representing the cache, with methods for cache operations.
+ *
+ * @example
+ * ```js
+ * const lruHandler = createLruHandler({
+ *   maxItemsNumber: 10000, // 10000 items
+ *   maxItemSizeBytes: 1024 * 1024 * 500, // 500 MB
+ * });
+ * ```
+ *
+ * @remarks
+ * - Use this Handler as a fallback for any remote store Handler.
+ *
+ * @since 1.0.0
+ */
+export default function createHandler({
+  ...lruOptions
+}: LruCacheOptions = {}): Handler {
+  const lruCacheStore = createConfiguredCache<CacheHandlerValue>(
+    (v) => JSON.stringify(v).length,
+    lruOptions,
+  );
+
+  const revalidatedTags = new Map<string, number>();
+
+  return {
+    name: "local-lru",
+    get(key, { implicitTags }) {
+      const cacheValue = lruCacheStore.get(key);
+
+      if (!cacheValue) {
+        return Promise.resolve(null);
+      }
+
+      const sanitizedImplicitTags = implicitTags;
+
+      const combinedTags = new Set([
+        ...cacheValue.tags,
+        ...sanitizedImplicitTags,
+      ]);
+
+      if (combinedTags.size === 0) {
+        return Promise.resolve(cacheValue);
+      }
+
+      for (const tag of combinedTags) {
+        const revalidationTime = revalidatedTags.get(tag);
+
+        if (revalidationTime && revalidationTime > cacheValue.lastModified) {
+          lruCacheStore.delete(key);
+
+          return Promise.resolve(null);
+        }
+      }
+
+      return Promise.resolve(cacheValue);
+    },
+    set(key, cacheHandlerValue) {
+      lruCacheStore.set(key, cacheHandlerValue);
+
+      return Promise.resolve();
+    },
+    revalidateTag(tag) {
+      // Iterate over all entries in the cache
+      for (const [key, { tags }] of lruCacheStore.entries()) {
+        // If the value's tags include the specified tag, delete this entry
+        if (tags.includes(tag)) {
+          lruCacheStore.delete(key);
+        }
+      }
+
+      if (tag.startsWith(NEXT_CACHE_IMPLICIT_TAG_ID)) {
+        revalidatedTags.set(tag, Date.now());
+      }
+
+      return Promise.resolve();
+    },
+    delete(key) {
+      lruCacheStore.delete(key);
+
+      return Promise.resolve();
+    },
+  };
+}
