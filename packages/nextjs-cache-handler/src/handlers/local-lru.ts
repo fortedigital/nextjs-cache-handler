@@ -1,6 +1,7 @@
 import { LRUCache } from "lru-cache";
 import { CacheHandlerValue, Handler } from "./cache-handler.types";
 import { NEXT_CACHE_IMPLICIT_TAG_ID } from "../helpers/const";
+import { LruCacheOptions } from "./local-lru.types";
 
 const MAX_ITEMS_NUMBER = 1000;
 const MAX_ITEM_SIZE_BYTES = 100 * 1024 * 1024;
@@ -34,28 +35,6 @@ export function createConfiguredCache<CacheValueType extends object | string>(
 }
 
 /**
- * Configuration options for the LRU cache.
- */
-export type LruCacheOptions = {
-  /**
-   * Optional. Maximum number of items the cache can hold.
-   *
-   * @default 1000
-   */
-  maxItemsNumber?: number;
-  /**
-   * Optional. Maximum size in bytes for each item in the cache.
-   *
-   * @default 104857600 // 100 Mb
-   */
-  maxItemSizeBytes?: number;
-};
-/**
- * @deprecated Use {@link LruCacheOptions} instead.
- */
-export type LruCacheHandlerOptions = LruCacheOptions;
-
-/**
  * Creates an LRU (Least Recently Used) cache Handler.
  *
  * This function initializes an LRU cache handler for managing cache operations.
@@ -77,8 +56,6 @@ export type LruCacheHandlerOptions = LruCacheOptions;
  *
  * @remarks
  * - Use this Handler as a fallback for any remote store Handler.
- *
- * @since 1.0.0
  */
 export default function createHandler({
   ...lruOptions
