@@ -252,15 +252,12 @@ export default function createHandler({
       let expireOperation: Promise<boolean> | undefined;
       const lifespan = cacheHandlerValue.lifespan;
 
-      const setTagsOperation =
-        cacheHandlerValue.tags.length > 0
-          ? client.hSet(
-              options,
-              keyPrefix + sharedTagsKey,
-              key,
-              JSON.stringify(cacheHandlerValue.tags),
-            )
-          : undefined;
+      const setTagsOperation = client.hSet(
+        options,
+        keyPrefix + sharedTagsKey,
+        key,
+        JSON.stringify(cacheHandlerValue.tags | []),
+      );
 
       const setSharedTtlOperation = lifespan
         ? client.hSet(
