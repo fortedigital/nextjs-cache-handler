@@ -1,0 +1,20 @@
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directories:
+      - "/packages/nextjs-cache-handler"
+    schedule:
+      interval: "weekly"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      all-updates:
+        applies-to: all
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
