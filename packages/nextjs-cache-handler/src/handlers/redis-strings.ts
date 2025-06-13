@@ -236,7 +236,7 @@ export default function createHandler({
         .hSet(
           keyPrefix + sharedTagsKey,
           key,
-          JSON.stringify(cacheHandlerValue.tags || []),
+          JSON.stringify(cacheHandlerValue.tags ?? []),
         );
 
       const setSharedTtlOperation = lifespan
