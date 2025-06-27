@@ -51,6 +51,8 @@ npm install @fortedigital/nextjs-cache-handler
 
 Package depends on the original `@neshca/cache-handler` package - you can use anything provided by it by using import/require from `@neshca/cache-handler`.
 
+When using `npm` you may need `--legacy-peer-deps` to install the package in version <2.0.0. This is due to internal reference to `@neshca/cache-handler`.
+
 ## Next 15 Support
 
 As `@neshca/cache-handler` does not officially support Next 15+ yet, we try to keep up with Next and prepare more or less temporary workarounds. At some point we will either create a fork of `@neshca/cache-handler` to fully support Next 15 or it gets updated by the maintainers. As for now we're building a set of decorators/workarounds you can use to build cache solutions for Next 15. We might need to do a full-blown rework which will be marked with a proper major version upgrade.
