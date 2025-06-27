@@ -283,7 +283,7 @@ declare class CacheHandler implements NextCacheHandler {
    *
    * // after the Next.js called the onCreation hook
    * console.log(CacheHandler.name);
-   * // Output: "@neshca/cache-handler with 2 Handlers"
+   * // Output: "cache-handler with 2 Handlers"
    * ```
    */
   static get name(): string;

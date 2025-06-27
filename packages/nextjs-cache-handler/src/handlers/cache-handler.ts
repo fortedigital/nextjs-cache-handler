@@ -105,15 +105,15 @@ export class CacheHandler implements NextCacheHandler {
    *
    * // after the Next.js called the onCreation hook
    * console.log(CacheHandler.name);
-   * // Output: "@neshca/cache-handler with 2 Handlers"
+   * // Output: "cache-handler with 2 Handlers"
    * ```
    */
   static get name(): string {
     if (CacheHandler.#cacheListLength === undefined) {
-      return "@neshca/cache-handler is not configured yet";
+      return "cache-handler is not configured yet";
     }
 
-    return `@neshca/cache-handler with ${CacheHandler.#cacheListLength} Handler${
+    return `cache-handler with ${CacheHandler.#cacheListLength} Handler${
       CacheHandler.#cacheListLength > 1 ? "s" : ""
     }`;
   }
@@ -643,7 +643,7 @@ export class CacheHandler implements NextCacheHandler {
       );
     }
 
-    const { tags = [], internal_lastModified } = ctx;
+    const { tags = [], internal_lastModified } = ctx ?? {};
 
     const revalidate = (incrementalCacheValue as CachedFetchValue)?.revalidate;
 
