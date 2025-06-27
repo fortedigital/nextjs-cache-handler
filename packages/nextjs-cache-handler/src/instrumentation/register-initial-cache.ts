@@ -231,7 +231,6 @@ export async function registerInitialCache(
     router: Router,
     revalidate: Revalidate,
   ) {
-    /** https://github.com/fortedigital/nextjs-cache-handler/issues/17 */
     if (router === "app" && cachePath === "/") {
       cachePath = "/index";
     }
