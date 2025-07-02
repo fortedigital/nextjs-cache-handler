@@ -35,7 +35,9 @@ If you need the full Redis package:
 **Before (1.x.x):**
 
 ```js
-const { Next15CacheHandler } = require("@fortedigital/nextjs-cache-handler/next-15-cache-handler");
+const {
+  Next15CacheHandler,
+} = require("@fortedigital/nextjs-cache-handler/next-15-cache-handler");
 module.exports = new Next15CacheHandler();
 ```
 
@@ -106,7 +108,7 @@ If upgrading from Next 14 or earlier, **flush your Redis cache**. Cache formats 
 
 ## Next 15 Support
 
-`@neshca/cache-handler` does not support Next.js 15+. Prior to 2.0.0, this package provided wrappers and enhancements. 
+`@neshca/cache-handler` does not support Next.js 15+. Prior to 2.0.0, this package provided wrappers and enhancements.
 From version 2.0.0 onward, `@fortedigital/nextjs-cache-handler` is a standalone solution with no dependency on `@neshca/cache-handler`.
 
 We aim to keep up with new Next.js releases and will introduce major changes with appropriate version bumps.
@@ -276,13 +278,19 @@ const bufferStringDecorator =
 
 ### 2.x.x
 
+#### Full example
+
+`./examples/redis-minimal`
+
+#### Example `cache-handler.js`.
+
 ```js
 const { createClient } = require("redis");
 const { PHASE_PRODUCTION_BUILD } = require("next/constants");
 const createCompositeHandler =
   require("@fortedigital/nextjs-cache-handler/composite").default;
 const createRedisHandler =
-  require("@fortedigital/nextjs-cache-handler/buffer-string-decorator").default;
+  require("@fortedigital/nextjs-cache-handler/redis-strings").default;
 const createLruHandler =
   require("@fortedigital/nextjs-cache-handler/local-lru").default;
 const { CacheHandler } = require("@fortedigital/nextjs-cache-handler");
