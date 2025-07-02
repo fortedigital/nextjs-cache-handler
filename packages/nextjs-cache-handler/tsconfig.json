@@ -6,7 +6,7 @@
     "declarationMap": true,
     "esModuleInterop": true,
     "incremental": false,
-    "isolatedModules": true,
+    "isolatedModules": false,
     "lib": ["es2022", "DOM", "DOM.Iterable"],
     "moduleDetection": "force",
     "noUncheckedIndexedAccess": true,

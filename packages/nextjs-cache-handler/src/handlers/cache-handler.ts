@@ -15,11 +15,13 @@ import {
   Revalidate,
 } from "./cache-handler.types";
 import { PrerenderManifest } from "next/dist/build";
-import type {
-  CachedFetchValue,
-  IncrementalCachedPageValue,
-  GetIncrementalResponseCacheContext,
-  GetIncrementalFetchCacheContext,
+import {
+  type CachedFetchValue,
+  type IncrementalCachedPageValue,
+  type GetIncrementalResponseCacheContext,
+  type GetIncrementalFetchCacheContext,
+  CachedRouteKind,
+  IncrementalCacheValue,
 } from "next/dist/server/response-cache/types";
 
 const PRERENDER_MANIFEST_VERSION = 4;
@@ -185,18 +187,23 @@ export class CacheHandler implements NextCacheHandler {
         );
       }
 
+      const value: IncrementalCacheValue &
+        Pick<IncrementalCachedPageValue, "pageData"> = {
+        kind: CachedRouteKind.APP_PAGE,
+        html: pageHtmlFile,
+        pageData,
+        postponed: undefined,
+        headers: undefined,
+        status: undefined,
+        rscData: undefined,
+        segmentData: undefined,
+      };
+
       cacheHandlerValue = {
         lastModified: mtimeMs,
         lifespan: null,
         tags: [],
-        value: {
-          kind: "APP_PAGE" as unknown as any, // TODO check casting
-          html: pageHtmlFile,
-          pageData,
-          postponed: undefined,
-          headers: undefined,
-          status: undefined,
-        },
+        value: value,
       };
     } catch (error) {
       cacheHandlerValue = null;
@@ -690,7 +697,7 @@ export class CacheHandler implements NextCacheHandler {
       lastModified,
       lifespan,
       tags: Object.freeze(cacheHandlerValueTags),
-      value,
+      value: value,
     };
 
     await CacheHandler.#mergedHandler.set(cacheKey, cacheHandlerValue);
@@ -698,7 +705,7 @@ export class CacheHandler implements NextCacheHandler {
     if (hasFallbackFalse && cacheHandlerValue.value?.kind === "APP_PAGE") {
       await CacheHandler.#writePagesRouterPage(
         cacheKey,
-        cacheHandlerValue.value as unknown as IncrementalCachedPageValue, // TODO check casting
+        cacheHandlerValue.value as unknown as IncrementalCachedPageValue,
       );
     }
   }

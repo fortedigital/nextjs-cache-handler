@@ -3,7 +3,13 @@ import path from "node:path";
 import { PRERENDER_MANIFEST, SERVER_DIRECTORY } from "next/constants";
 import type { PrerenderManifest } from "next/dist/build";
 import { CACHE_ONE_YEAR } from "next/dist/lib/constants";
-import { CachedFetchValue } from "next/dist/server/response-cache";
+import {
+  CachedFetchValue,
+  CachedRouteKind,
+  CachedRouteValue,
+  IncrementalCachedAppPageValue,
+  IncrementalCachedPageValue,
+} from "next/dist/server/response-cache";
 import type { OutgoingHttpHeaders } from "http";
 import { getTagsFromHeaders } from "../helpers/getTagsFromHeaders";
 import { Revalidate } from "../handlers/cache-handler.types";
@@ -197,20 +203,17 @@ export async function registerInitialCache(
     }
 
     try {
-      await cacheHandler.set(
-        cachePath,
-        {
-          kind: "APP_ROUTE" as unknown as any, // TODO check casting
-          body,
-          headers: meta.headers,
-          status: meta.status,
-        },
-        {
-          revalidate,
-          internal_lastModified: lastModified,
-          tags: getTagsFromHeaders(meta.headers),
-        },
-      );
+      const value: CachedRouteValue = {
+        kind: CachedRouteKind.APP_ROUTE,
+        body,
+        headers: meta.headers,
+        status: meta.status,
+      };
+      await cacheHandler.set(cachePath, value, {
+        revalidate,
+        internal_lastModified: lastModified,
+        tags: getTagsFromHeaders(meta.headers),
+      });
     } catch (error) {
       if (debug) {
         console.warn(
@@ -231,7 +234,7 @@ export async function registerInitialCache(
     revalidate: Revalidate,
   ) {
     const isAppRouter = router === "app";
-    
+
     if (isAppRouter && cachePath === "/") {
       cachePath = "/index";
     }
@@ -288,18 +291,22 @@ export async function registerInitialCache(
     }
 
     try {
-      await cacheHandler.set(
-        cachePath,
-        {
-          kind: "APP_PAGE" as unknown as any, // TODO check casting
-          html,
-          pageData,
-          postponed: meta?.postponed,
-          headers: meta?.headers,
-          status: meta?.status,
-        },
-        { revalidate, internal_lastModified: lastModified },
-      );
+      const value: IncrementalCachedAppPageValue &
+        Pick<IncrementalCachedPageValue, "pageData"> = {
+        kind: CachedRouteKind.APP_PAGE,
+        html,
+        pageData,
+        postponed: meta?.postponed,
+        headers: meta?.headers,
+        status: meta?.status,
+        rscData: undefined,
+        segmentData: undefined,
+      };
+
+      await cacheHandler.set(cachePath, value, {
+        revalidate,
+        internal_lastModified: lastModified,
+      });
     } catch (error) {
       if (debug) {
         console.warn(
