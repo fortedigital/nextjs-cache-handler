@@ -1,5 +1,9 @@
 {
   "name": "redis-minimal",
+  "author": {
+    "name": "Forte_ Digital",
+    "url": "https://fortedigital.com"
+  },
   "version": "0.1.0",
   "private": true,
   "scripts": {
