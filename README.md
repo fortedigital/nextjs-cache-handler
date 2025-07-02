@@ -7,96 +7,8 @@ Starting from version `2.0.0`, this package no longer depends on `@neshca/cache-
 
 ## Migration
 
-### 1.x.x → 2.x.x
-
-> **Note:** Starting in `2.0.0`, `@neshca/cache-handler` is no longer a dependency.
-
-**Requirements:**
-
-- Next.js `>=15.2.4`
-- Redis `>=5.5.6`
-
-If you're only using the Redis client:
-
-```json
-"next": ">=15.2.4",
-"@redis/client": ">=5.5.6"
-```
-
-If you need the full Redis package:
-
-```json
-"next": ">=15.2.4",
-"redis": ">=5.5.6"
-```
-
-#### Code changes
-
-**Before (1.x.x):**
-
-```js
-const {
-  Next15CacheHandler,
-} = require("@fortedigital/nextjs-cache-handler/next-15-cache-handler");
-module.exports = new Next15CacheHandler();
-```
-
-**After (2.x.x+):**
-
-```js
-const { CacheHandler } = require("@fortedigital/nextjs-cache-handler");
-module.exports = CacheHandler;
-```
-
-`createBufferStringHandler` is integrated into `redis-strings` and no longer required separately for Next 15+.
-
----
-
-### 1.2.x → ^1.3.x
-
-#### Cache Handler
-
-**Before:**
-
-```js
-const {
-  Next15CacheHandler,
-} = require("@fortedigital/nextjs-cache-handler/next-15-cache-handler");
-module.exports = new Next15CacheHandler();
-```
-
-**After:**
-
-```js
-const { Next15CacheHandler } = require("@fortedigital/nextjs-cache-handler");
-module.exports = Next15CacheHandler;
-```
-
-#### Instrumentation
-
-**Before:**
-
-```js
-if (process.env.NEXT_RUNTIME === "nodejs") {
-  const { registerInitialCache } = await import(
-    "@neshca/cache-handler/instrumentation"
-  );
-  const CacheHandler = (await import("./cache-handler.js")).default;
-  await registerInitialCache(CacheHandler);
-}
-```
-
-**After:**
-
-```js
-if (process.env.NEXT_RUNTIME === "nodejs") {
-  const { registerInitialCache } = await import(
-    "@fortedigital/nextjs-cache-handler/instrumentation"
-  );
-  const CacheHandler = (await import("./cache-handler.js")).default;
-  await registerInitialCache(CacheHandler);
-}
-```
+- [1.x.x → ^2.x.x](docs\migration\1_x_x__2_x_x.md)
+- [1.2.x -> ^1.3.x](docs\migration\1_2_x__1_3_x.md)
 
 ---
 
@@ -108,8 +20,9 @@ If upgrading from Next 14 or earlier, **flush your Redis cache**. Cache formats 
 
 ## Next 15 Support
 
-`@neshca/cache-handler` does not support Next.js 15+. Prior to 2.0.0, this package provided wrappers and enhancements.
+`@neshca/cache-handler` does not support Next.js 15. Prior to 2.0.0, this package provided wrappers and enhancements.
 From version 2.0.0 onward, `@fortedigital/nextjs-cache-handler` is a standalone solution with no dependency on `@neshca/cache-handler`.
+`@fortedigital/nextjs-cache-handler` is fully compatible with Next.js 15 and [redis 5](https://www.npmjs.com/package/redis).
 
 We aim to keep up with new Next.js releases and will introduce major changes with appropriate version bumps.
 
@@ -249,7 +162,7 @@ const compositeHandler = createCompositeHandler({
 
 ---
 
-### ⚠️ `buffer-string-decorator` | **REMOVED IN 2.0.0!** - integrated into the core package ⚠️
+### ⚠️ `buffer-string-decorator` | **REMOVED IN 2.0.0!** - integrated into the core package
 
 #### Features:
 
@@ -280,7 +193,7 @@ const bufferStringDecorator =
 
 #### Full example
 
-`./examples/redis-minimal`
+[Example project](./examples/redis-minimal)
 
 #### Example `cache-handler.js`.
 
