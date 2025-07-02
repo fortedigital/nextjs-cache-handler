@@ -109,8 +109,7 @@ A Redis-based handler for key- and tag-based caching. Compared to the original i
 - Default `revalidateTagQuerySize`: `10_000` (safe for large caches)
 
 ```js
-const createRedisHandler =
-  require("@neshca/cache-handler/redis-strings").default;
+import createRedisHandler from "@fortedigital/nextjs-cache-handler/redis-strings";
 
 const redisHandler = await createRedisHandler({
   client,
@@ -136,10 +135,9 @@ The local-lru Handler uses a lru-cache ↗ instance as the cache store. It store
 - Default `revalidateTagQuerySize`: `10_000` (safe for large caches)
 
 ```js
-const createLocalLruHandler =
-  require("@neshca/cache-handler/local-lru").default;
+import createLruHandler from "@fortedigital/nextjs-cache-handler/local-lru";
 
-const localHandler = createLocalLruHandler({
+const localHandler = createLruHandler({
   maxItemsNumber: 10000,
   maxItemSizeBytes: 1024 * 1024 * 500,
 });
@@ -158,8 +156,7 @@ Routes cache operations across multiple underlying handlers.
 - First-available read strategy
 
 ```js
-const createCompositeHandler =
-  require("@neshca/cache-handler/composite").default;
+import createCompositeHandler from "@fortedigital/nextjs-cache-handler/composite";
 
 const compositeHandler = createCompositeHandler({
   handlers: [handler1, handler2],
@@ -183,11 +180,9 @@ Next 15 decided to change types of some properties from String to Buffer which c
   See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L80
 
 ```js
-const createBufferStringDecoratorHandler =
-  require("@neshca/cache-handler/composite").default;
+import createBufferStringDecoratorHandler from "@fortedigital/nextjs-cache-handler/buffer-string-decorator";
 
-const bufferStringDecorator =
-  createBufferStringDecoratorHandler(redisCacheHandler);
+const bufferStringDecorator = createBufferStringDecoratorHandler(redisCacheHandler);
 ```
 
 ## Examples
