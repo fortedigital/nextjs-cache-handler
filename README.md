@@ -10,57 +10,64 @@ Starting from version `2.0.0`, this package no longer depends on `@neshca/cache-
 - [1.x.x → ^2.x.x](docs\migration\1_x_x__2_x_x.md)
 - [1.2.x -> ^1.3.x](docs\migration\1_2_x__1_3_x.md)
 
----
-
 ## Installation
 
-If upgrading from Next 14 or earlier, **flush your Redis cache**. Cache formats between Next 14 and 15 are incompatible.
+`npm i @fortedigital/nextjs-cache-handler`
 
----
+If upgrading from Next 14 or earlier, **flush your Redis cache** before running new version of the application locally and on your hosted environments. **Cache formats between Next 14 and 15 are incompatible**.
 
 ## Next 15 Support
 
-`@neshca/cache-handler` does not support Next.js 15. Prior to 2.0.0, this package provided wrappers and enhancements.
-From version 2.0.0 onward, `@fortedigital/nextjs-cache-handler` is a standalone solution with no dependency on `@neshca/cache-handler`.
-`@fortedigital/nextjs-cache-handler` is fully compatible with Next.js 15 and [redis 5](https://www.npmjs.com/package/redis).
+The original `@neshca/cache-handler` package does not support Next.js 15.
+
+Prior to 2.0.0, this package provided wrappers and enhancements to allow using `@neshca/cache-handler` with Next.js 15.  
+From version 2.0.0 onward, `@fortedigital/nextjs-cache-handler` is a standalone solution with no dependency on `@neshca/cache-handler` and is fully compatible with Next.js 15 and [redis 5](https://www.npmjs.com/package/redis).
 
 We aim to keep up with new Next.js releases and will introduce major changes with appropriate version bumps.
 
----
+### Swapping from `@neshca/cache-handler`
 
-### Revalidate Fetch Breaking Change
+If you already use `@neshca/cache-handler` the setup is very streamlined and you just need to replace package references. If you're starting fresh please check [the example project](./examples/redis-minimal).
+
+#### Cache handler
 
 **Before:**
 
 ```js
-const { CacheHandler } = require("@neshca/cache-handler");
+// cache-handler.mjs
+
+import { CacheHandler } from "@neshca/cache-handler";
 
 CacheHandler.onCreation(() => {
   // setup
 });
 
-module.exports = CacheHandler;
+export default CacheHandler;
 ```
 
 **After:**
 
 ```js
-const { CacheHandler } = require("@fortedigital/nextjs-cache-handler");
+// cache-handler.mjs
+
+import { CacheHandler } from "@fortedigital/nextjs-cache-handler";
 
 CacheHandler.onCreation(() => {
   // setup
 });
 
-module.exports = CacheHandler;
+export default CacheHandler;
 ```
 
 ---
 
-### Instrumentation Update
+#### Instrumentation
 
 **Before:**
 
 ```js
+// instrumentation.ts
+
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const { registerInitialCache } = await import(
@@ -75,6 +82,8 @@ export async function register() {
 **After:**
 
 ```js
+// instrumentation.ts
+
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const { registerInitialCache } = await import(
@@ -85,8 +94,6 @@ export async function register() {
   }
 }
 ```
-
----
 
 ## Handlers
 
@@ -160,8 +167,6 @@ const compositeHandler = createCompositeHandler({
 });
 ```
 
----
-
 ### ⚠️ `buffer-string-decorator` | **REMOVED IN 2.0.0!** - integrated into the core package
 
 #### Features:
@@ -185,8 +190,6 @@ const bufferStringDecorator =
   createBufferStringDecoratorHandler(redisCacheHandler);
 ```
 
----
-
 ## Examples
 
 ### 2.x.x
@@ -198,30 +201,33 @@ const bufferStringDecorator =
 #### Example `cache-handler.js`.
 
 ```js
-const { createClient } = require("redis");
-const { PHASE_PRODUCTION_BUILD } = require("next/constants");
-const createCompositeHandler =
-  require("@fortedigital/nextjs-cache-handler/composite").default;
-const createRedisHandler =
-  require("@fortedigital/nextjs-cache-handler/redis-strings").default;
-const createLruHandler =
-  require("@fortedigital/nextjs-cache-handler/local-lru").default;
-const { CacheHandler } = require("@fortedigital/nextjs-cache-handler");
+import { createClient } from "redis";
+import { PHASE_PRODUCTION_BUILD } from "next/constants.js";
+import { CacheHandler } from "@fortedigital/nextjs-cache-handler";
+import createLruHandler from "@fortedigital/nextjs-cache-handler/local-lru";
+import createRedisHandler from "@fortedigital/nextjs-cache-handler/redis-strings";
+import createCompositeHandler from "@fortedigital/nextjs-cache-handler/composite";
 
 CacheHandler.onCreation(() => {
+  // Important - It's recommended to use global scope to ensure only one Redis connection is made
+  // This ensures only one instance get created
   if (global.cacheHandlerConfig) {
     return global.cacheHandlerConfig;
   }
 
+  // Important - It's recommended to use global scope to ensure only one Redis connection is made
+  // This ensures new instances are not created in a race condition
   if (global.cacheHandlerConfigPromise) {
     return global.cacheHandlerConfigPromise;
   }
 
+  // You may need to ignore Redis locally, remove this block otherwise
   if (process.env.NODE_ENV === "development") {
     const lruCache = createLruHandler();
     return { handlers: [lruCache] };
   }
 
+  // Main promise initializing the handler
   global.cacheHandlerConfigPromise = (async () => {
     let redisClient = null;
 
@@ -231,6 +237,7 @@ CacheHandler.onCreation(() => {
         pingInterval: 10000,
       };
 
+      // This is optional and needed only if you use access keys
       if (process.env.REDIS_ACCESS_KEY) {
         settings.password = process.env.REDIS_ACCESS_KEY;
       }
@@ -282,11 +289,13 @@ CacheHandler.onCreation(() => {
 
     global.cacheHandlerConfigPromise = null;
 
+    // This example uses composite handler to switch from Redis to LRU cache if tags contains `memory-cache` tag.
+    // You can skip composite and use Redis or LRU only.
     global.cacheHandlerConfig = {
       handlers: [
         createCompositeHandler({
           handlers: [lruCache, redisCacheHandler],
-          setStrategy: (ctx) => (ctx?.tags.includes("memory-cache") ? 0 : 1),
+          setStrategy: (ctx) => (ctx?.tags.includes("memory-cache") ? 0 : 1), // You can adjust strategy for deciding which cache should the composite use
         }),
       ],
     };
@@ -297,28 +306,25 @@ CacheHandler.onCreation(() => {
   return global.cacheHandlerConfigPromise;
 });
 
-module.exports = CacheHandler;
+exports default CacheHandler;
 ```
 
 ### 1.x.x
 
 ```js
 // @neshca/cache-handler dependencies
-const { CacheHandler } = require("@neshca/cache-handler");
-const createLruHandler = require("@neshca/cache-handler/local-lru").default;
+import { CacheHandler } from "@neshca/cache-handler";
+import createLruHandler from "@neshca/cache-handler/local-lru";
 
 // Next/Redis dependencies
-const { createClient } = require("redis");
-const { PHASE_PRODUCTION_BUILD } = require("next/constants");
+import { createClient } from "redis";
+import { PHASE_PRODUCTION_BUILD } from "next/constants";
 
 // @fortedigital/nextjs-cache-handler dependencies
-const createCompositeHandler =
-  require("@fortedigital/nextjs-cache-handler/composite").default;
-const createRedisHandler =
-  require("@fortedigital/nextjs-cache-handler/redis-strings").default;
-const createBufferStringHandler =
-  require("@fortedigital/nextjs-cache-handler/buffer-string-decorator").default;
-const { Next15CacheHandler } = require("@fortedigital/nextjs-cache-handler");
+import createCompositeHandler from "@fortedigital/nextjs-cache-handler/composite";
+import createRedisHandler from "@fortedigital/nextjs-cache-handler/redis-strings";
+import createBufferStringHandler from "@fortedigital/nextjs-cache-handler/buffer-string-decorator";
+import { Next15CacheHandler } from "@fortedigital/nextjs-cache-handler";
 
 // Usual onCreation from @neshca/cache-handler
 CacheHandler.onCreation(() => {
@@ -421,7 +427,7 @@ CacheHandler.onCreation(() => {
   return global.cacheHandlerConfigPromise;
 });
 
-module.exports = Next15CacheHandler;
+export default CacheHandler;
 ```
 
 ---
