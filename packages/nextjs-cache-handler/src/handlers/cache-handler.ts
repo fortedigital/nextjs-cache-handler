@@ -20,7 +20,6 @@ import {
   type IncrementalCachedPageValue,
   type GetIncrementalResponseCacheContext,
   type GetIncrementalFetchCacheContext,
-  CachedRouteKind,
   IncrementalCacheValue,
 } from "next/dist/server/response-cache/types";
 
@@ -189,7 +188,7 @@ export class CacheHandler implements NextCacheHandler {
 
       const value: IncrementalCacheValue &
         Pick<IncrementalCachedPageValue, "pageData"> = {
-        kind: CachedRouteKind.APP_PAGE,
+        kind: "APP_PAGE" as unknown as any,
         html: pageHtmlFile,
         pageData,
         postponed: undefined,

@@ -5,7 +5,6 @@ import type { PrerenderManifest } from "next/dist/build";
 import { CACHE_ONE_YEAR } from "next/dist/lib/constants";
 import {
   CachedFetchValue,
-  CachedRouteKind,
   CachedRouteValue,
   IncrementalCachedAppPageValue,
   IncrementalCachedPageValue,
@@ -204,7 +203,7 @@ export async function registerInitialCache(
 
     try {
       const value: CachedRouteValue = {
-        kind: CachedRouteKind.APP_ROUTE,
+        kind: "APP_ROUTE" as unknown as any,
         body,
         headers: meta.headers,
         status: meta.status,
@@ -293,7 +292,7 @@ export async function registerInitialCache(
     try {
       const value: IncrementalCachedAppPageValue &
         Pick<IncrementalCachedPageValue, "pageData"> = {
-        kind: CachedRouteKind.APP_PAGE,
+        kind: "APP_PAGE" as unknown as any,
         html,
         pageData,
         postponed: meta?.postponed,
