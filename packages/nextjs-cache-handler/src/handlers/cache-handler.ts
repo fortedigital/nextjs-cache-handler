@@ -16,12 +16,12 @@ import {
 } from "./cache-handler.types";
 import { PrerenderManifest } from "next/dist/build";
 import {
-  type CachedFetchValue,
   type IncrementalCachedPageValue,
   type GetIncrementalResponseCacheContext,
   type GetIncrementalFetchCacheContext,
   IncrementalCacheValue,
 } from "next/dist/server/response-cache/types";
+import { resolveRevalidateValue } from "../helpers/resolveRevalidateValue";
 
 const PRERENDER_MANIFEST_VERSION = 4;
 
@@ -651,7 +651,7 @@ export class CacheHandler implements NextCacheHandler {
 
     const { tags = [], internal_lastModified } = ctx ?? {};
 
-    const revalidate = (incrementalCacheValue as CachedFetchValue)?.revalidate;
+    const revalidate = resolveRevalidateValue(incrementalCacheValue, ctx);
 
     const lastModified = Math.round(internal_lastModified ?? Date.now());
 

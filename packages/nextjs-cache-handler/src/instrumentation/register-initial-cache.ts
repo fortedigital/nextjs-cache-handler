@@ -12,6 +12,7 @@ import {
 import type { OutgoingHttpHeaders } from "http";
 import { getTagsFromHeaders } from "../helpers/getTagsFromHeaders";
 import { Revalidate } from "../handlers/cache-handler.types";
+import { resolveRevalidateValue } from "../helpers/resolveRevalidateValue";
 
 type CacheHandlerType = typeof import("../handlers/cache-handler").CacheHandler;
 
@@ -392,9 +393,11 @@ export async function registerInitialCache(
       return;
     }
 
+    const revalidateValue = fetchCache.revalidate;
+
     // HACK: By default, Next.js sets the revalidate option to CACHE_ONE_YEAR if the revalidate option is set
     const revalidate =
-      fetchCache.revalidate === CACHE_ONE_YEAR ? false : fetchCache.revalidate;
+      revalidateValue === CACHE_ONE_YEAR ? false : revalidateValue;
 
     try {
       await cacheHandler.set(fetchCacheKey, fetchCache, {
