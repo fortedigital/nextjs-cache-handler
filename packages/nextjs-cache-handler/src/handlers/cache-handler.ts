@@ -188,7 +188,7 @@ export class CacheHandler implements NextCacheHandler {
 
       const value: IncrementalCacheValue &
         Pick<IncrementalCachedPageValue, "pageData"> = {
-        kind: "APP_PAGE" as unknown as any,
+        kind: "PAGES" as unknown as any,
         html: pageHtmlFile,
         pageData,
         postponed: undefined,

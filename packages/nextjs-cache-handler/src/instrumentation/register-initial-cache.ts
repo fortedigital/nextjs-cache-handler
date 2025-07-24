@@ -12,7 +12,6 @@ import {
 import type { OutgoingHttpHeaders } from "http";
 import { getTagsFromHeaders } from "../helpers/getTagsFromHeaders";
 import { Revalidate } from "../handlers/cache-handler.types";
-import { resolveRevalidateValue } from "../helpers/resolveRevalidateValue";
 
 type CacheHandlerType = typeof import("../handlers/cache-handler").CacheHandler;
 
@@ -293,7 +292,7 @@ export async function registerInitialCache(
     try {
       const value: IncrementalCachedAppPageValue &
         Pick<IncrementalCachedPageValue, "pageData"> = {
-        kind: "APP_PAGE" as unknown as any,
+        kind: (isAppRouter ? "APP_PAGE" : "PAGES") as unknown as any,
         html,
         pageData,
         postponed: meta?.postponed,
