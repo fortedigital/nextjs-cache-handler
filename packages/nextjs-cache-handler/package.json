@@ -49,6 +49,9 @@
       ],
       "redis-strings": [
         "dist/handlers/redis-strings.d.ts"
+      ],
+      "local-lru": [
+        "dist/handlers/local-lru.d.ts"
       ]
     }
   },
