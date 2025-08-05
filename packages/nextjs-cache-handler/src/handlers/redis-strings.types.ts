@@ -1,4 +1,4 @@
-import type { createClient } from "@redis/client";
+import type { RedisClientType } from "@redis/client";
 
 export type RedisCompliantCachedRouteValue = {
   // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L97
@@ -13,9 +13,7 @@ export type RedisCompliantCachedAppPageValue = {
   segmentData: Record<string, string> | undefined;
 };
 
-export type CreateRedisStringsHandlerOptions<
-  T = ReturnType<typeof createClient>,
-> = {
+export type CreateRedisStringsHandlerOptions<T = RedisClientType> = {
   /**
    * The Redis client instance.
    */

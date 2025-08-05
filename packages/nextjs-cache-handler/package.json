@@ -18,7 +18,7 @@
     "next",
     "redis"
   ],
-  "version": "2.0.3",
+  "version": "2.1.0-canary",
   "type": "module",
   "license": "MIT",
   "description": "Next.js cache handlers",
@@ -52,6 +52,9 @@
       ],
       "local-lru": [
         "dist/handlers/local-lru.d.ts"
+      ],
+      "redis-cluster-strings": [
+        "dist/handlers/redis-cluster-strings.d.ts"
       ]
     }
   },
@@ -60,8 +63,8 @@
     "prepare": "npm run build",
     "clean": "rimraf ./dist ./.turbo ./node_modules",
     "dev": "tsup --watch",
-    "test": "tsx --test src/**/*.test.ts",
-    "test:watch": "tsx --watch --test src/**/*.test.ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "format": "npx prettier --write .",
     "lint": "npx eslint",
     "lint:fix": "npm run format && npm run lint -- --fix"
@@ -72,21 +75,24 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@types/jest": "^30.0.0",
     "@types/node": "22.16.5",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.2",
     "globals": "^16.3.0",
+    "jest": "^30.0.5",
     "prettier": "^3.6.2",
     "prettier-plugin-packagejson": "2.5.19",
     "rimraf": "6.0.1",
+    "ts-jest": "^29.4.1",
     "tsup": "^8.5.0",
     "tsx": "4.20.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0"
   },
   "peerDependencies": {
-    "next": ">=15.2.4",
-    "@redis/client": ">= 5.5.6"
+    "@redis/client": ">= 5.5.6",
+    "next": ">=15.2.4"
   },
   "distTags": [
     "next15"
