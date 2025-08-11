@@ -18,7 +18,7 @@
     "next",
     "redis"
   ],
-  "version": "2.1.0-canary4",
+  "version": "2.1.0-canary5",
   "type": "module",
   "license": "MIT",
   "description": "Next.js cache handlers",
@@ -85,7 +85,7 @@
     "lru-cache": "11.1.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.32.0",
+    "@eslint/js": "^9.33.0",
     "@types/jest": "^30.0.0",
     "@types/node": "22.16.5",
     "eslint": "^8.57.1",
@@ -98,8 +98,8 @@
     "ts-jest": "^29.4.1",
     "tsup": "^8.5.0",
     "tsx": "4.20.3",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.38.0"
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.39.0"
   },
   "peerDependencies": {
     "@redis/client": ">= 5.5.6",
