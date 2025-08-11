@@ -33,7 +33,7 @@ export default function createHandler({
   keyExpirationStrategy = "EXPIREAT",
   revalidateTagQuerySize = 10_000,
 }: CreateRedisStringsHandlerOptions<
-  RedisClientType | RedisClusterWithAbortSignal<RedisClusterType>
+  RedisClientType | RedisClusterWithAbortSignal
 >): Handler {
   function assertClientIsReady(): void {
     if (!client.isReady) {

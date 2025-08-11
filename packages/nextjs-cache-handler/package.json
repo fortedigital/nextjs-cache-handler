@@ -18,7 +18,7 @@
     "next",
     "redis"
   ],
-  "version": "2.1.0-canary3",
+  "version": "2.1.0-canary4",
   "type": "module",
   "license": "MIT",
   "description": "Next.js cache handlers",
@@ -60,9 +60,6 @@
       ],
       "local-lru": [
         "dist/handlers/local-lru.d.ts"
-      ],
-      "redis-cluster-strings": [
-        "dist/handlers/redis-cluster-strings.d.ts"
       ],
       "cluster/withProxy": [
         "dist/helpers/redisClusterProxy.d.ts"
