@@ -18,7 +18,7 @@
     "next",
     "redis"
   ],
-  "version": "2.1.0-canary5",
+  "version": "2.1.0-canary6",
   "type": "module",
   "license": "MIT",
   "description": "Next.js cache handlers",
@@ -35,7 +35,7 @@
       "require": "./dist/instrumentation/instrumentation.cjs",
       "import": "./dist/instrumentation/instrumentation.js"
     },
-    "./cluster/withProxy": {
+    "./cluster/proxy": {
       "require": "./dist/helpers/redisClusterProxy.cjs",
       "import": "./dist/helpers/redisClusterProxy.js"
     },

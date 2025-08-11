@@ -7,7 +7,7 @@ import {
   parseBuffersToStrings,
 } from "../helpers/buffer";
 import { RedisClientType } from "@redis/client";
-import { RedisClusterWithAbortSignal as RedisClusterCacheProxy } from "../helpers/redisClusterProxy";
+import { RedisClusterCacheProxy } from "../helpers/redisClusterProxy";
 
 /**
  * Creates a Handler for handling cache operations using Redis strings.

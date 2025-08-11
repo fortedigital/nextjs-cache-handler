@@ -1,7 +1,7 @@
 import type { RedisClusterType } from "@redis/client";
 import { withAbortSignal } from "./withAbortSignal";
 
-export type RedisClusterWithAbortSignal = RedisClusterType & {
+export type RedisClusterCacheProxy = RedisClusterType & {
   withAbortSignal(signal: AbortSignal): RedisClusterType;
   isReady: boolean;
 };
@@ -9,7 +9,7 @@ export type RedisClusterWithAbortSignal = RedisClusterType & {
 export function withProxy<T extends RedisClusterType>(
   cluster: RedisClusterType,
   defaultSignal?: AbortSignal,
-): RedisClusterWithAbortSignal {
+): RedisClusterCacheProxy {
   let signal: AbortSignal | undefined = defaultSignal;
 
   const handler: ProxyHandler<T> = {
@@ -34,5 +34,5 @@ export function withProxy<T extends RedisClusterType>(
     },
   };
 
-  return new Proxy(cluster, handler) as RedisClusterWithAbortSignal;
+  return new Proxy(cluster, handler) as RedisClusterCacheProxy;
 }
