@@ -7,6 +7,7 @@ export const tsup = defineConfig({
     "src/instrumentation/*.ts",
     "src/helpers/redisClusterProxy.ts",
     "src/helpers/withAbortSignal.ts",
+    "src/helpers/withAbortSignalProxy.ts",
   ],
   splitting: false,
   outDir: "dist",

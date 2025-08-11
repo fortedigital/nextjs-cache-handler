@@ -6,8 +6,9 @@ import {
   convertStringsToBuffers,
   parseBuffersToStrings,
 } from "../helpers/buffer";
-import { RedisClientType } from "@redis/client";
+import type { RedisClientType } from "@redis/client";
 import { RedisClusterCacheProxy } from "../helpers/redisClusterProxy";
+import { withAbortSignalProxy } from "../helpers/withAbortSignalProxy";
 
 /**
  * Creates a Handler for handling cache operations using Redis strings.
@@ -25,7 +26,7 @@ import { RedisClusterCacheProxy } from "../helpers/redisClusterProxy";
  * - The `revalidateTag` and `delete` methods handle cache revalidation and deletion.
  */
 export default function createHandler({
-  client,
+  client: innerClient,
   keyPrefix = "",
   sharedTagsKey = "__sharedTags__",
   sharedTagsTtlKey = "__sharedTagsTtl__",
@@ -35,6 +36,8 @@ export default function createHandler({
 }: CreateRedisStringsHandlerOptions<
   RedisClientType | RedisClusterCacheProxy
 >): Handler {
+  const client = withAbortSignalProxy(innerClient);
+
   function assertClientIsReady(): void {
     if (!client.isReady) {
       throw new Error(
