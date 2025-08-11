@@ -18,7 +18,7 @@
     "next",
     "redis"
   ],
-  "version": "2.1.0-canary2",
+  "version": "2.1.0-canary3",
   "type": "module",
   "license": "MIT",
   "description": "Next.js cache handlers",
@@ -36,8 +36,8 @@
       "import": "./dist/instrumentation/instrumentation.js"
     },
     "./cluster/withProxy": {
-      "require": "./dist/helpers/withProxy.cjs",
-      "import": "./dist/helpers/withProxy.js"
+      "require": "./dist/helpers/redisClusterProxy.cjs",
+      "import": "./dist/helpers/redisClusterProxy.js"
     },
     "./helpers/withAbortSignal": {
       "require": "./dist/helpers/withAbortSignal.cjs",
@@ -65,7 +65,7 @@
         "dist/handlers/redis-cluster-strings.d.ts"
       ],
       "cluster/withProxy": [
-        "dist/helpers/withProxy.d.ts"
+        "dist/helpers/redisClusterProxy.d.ts"
       ],
       "helpers/withAbortSignal": [
         "dist/helpers/withAbortSignal.d.ts"
