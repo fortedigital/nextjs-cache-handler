@@ -2,7 +2,12 @@ import { defineConfig } from "tsup";
 
 export const tsup = defineConfig({
   name: "Build cache-handler",
-  entry: ["src/handlers/*.ts", "src/instrumentation/*.ts"],
+  entry: [
+    "src/handlers/*.ts",
+    "src/instrumentation/*.ts",
+    "src/helpers/redisClusterProxy.ts",
+    "src/helpers/withAbortSignal.ts",
+  ],
   splitting: false,
   outDir: "dist",
   clean: false,

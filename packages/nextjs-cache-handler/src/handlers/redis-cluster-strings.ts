@@ -1,7 +1,7 @@
 import { Handler } from "./cache-handler.types";
 import { CreateRedisClusterStringsHandlerOptions } from "./redis-cluster-strings.types";
 import createRedisStringsHandler from "./redis-strings";
-import { withAbortSignalWrapper } from "../helpers/redisClusterProxy";
+import { withProxy } from "../helpers/redisClusterProxy";
 
 /**
  * Creates a Handler for handling cache operations using Redis Cluster strings.
@@ -23,7 +23,7 @@ export default function createHandler({
   ...options
 }: CreateRedisClusterStringsHandlerOptions): Handler {
   return createRedisStringsHandler({
-    client: withAbortSignalWrapper(client),
+    client: withProxy(client),
     ...options,
   });
 }

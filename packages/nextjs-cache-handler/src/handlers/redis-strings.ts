@@ -7,7 +7,7 @@ import {
   parseBuffersToStrings,
 } from "../helpers/buffer";
 import { RedisClientType, RedisClusterType } from "@redis/client";
-import { WithAbortSignalCluster } from "../helpers/redisClusterProxy";
+import { RedisClusterWithAbortSignal } from "../helpers/redisClusterProxy";
 
 /**
  * Creates a Handler for handling cache operations using Redis strings.
@@ -33,7 +33,7 @@ export default function createHandler({
   keyExpirationStrategy = "EXPIREAT",
   revalidateTagQuerySize = 10_000,
 }: CreateRedisStringsHandlerOptions<
-  RedisClientType | WithAbortSignalCluster<RedisClusterType>
+  RedisClientType | RedisClusterWithAbortSignal<RedisClusterType>
 >): Handler {
   function assertClientIsReady(): void {
     if (!client.isReady) {
