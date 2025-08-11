@@ -18,7 +18,7 @@
     "next",
     "redis"
   ],
-  "version": "2.1.0-canary",
+  "version": "2.1.0-canary9",
   "type": "module",
   "license": "MIT",
   "description": "Next.js cache handlers",
@@ -34,6 +34,18 @@
     "./instrumentation": {
       "require": "./dist/instrumentation/instrumentation.cjs",
       "import": "./dist/instrumentation/instrumentation.js"
+    },
+    "./cluster/proxy": {
+      "require": "./dist/helpers/redisClusterProxy.cjs",
+      "import": "./dist/helpers/redisClusterProxy.js"
+    },
+    "./helpers/withAbortSignal": {
+      "require": "./dist/helpers/withAbortSignal.cjs",
+      "import": "./dist/helpers/withAbortSignal.js"
+    },
+    "./helpers/withAbortSignalProxy": {
+      "require": "./dist/helpers/withAbortSignalProxy.cjs",
+      "import": "./dist/helpers/withAbortSignalProxy.js"
     }
   },
   "typesVersions": {
@@ -53,8 +65,14 @@
       "local-lru": [
         "dist/handlers/local-lru.d.ts"
       ],
-      "redis-cluster-strings": [
-        "dist/handlers/redis-cluster-strings.d.ts"
+      "cluster/proxy": [
+        "dist/helpers/redisClusterProxy.d.ts"
+      ],
+      "helpers/withAbortSignal": [
+        "dist/helpers/withAbortSignal.d.ts"
+      ],
+      "helpers/withAbortSignalProxy": [
+        "dist/helpers/withAbortSignalProxy.d.ts"
       ]
     }
   },
@@ -74,7 +92,7 @@
     "lru-cache": "11.1.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.32.0",
+    "@eslint/js": "^9.33.0",
     "@types/jest": "^30.0.0",
     "@types/node": "22.16.5",
     "eslint": "^8.57.1",
@@ -87,8 +105,8 @@
     "ts-jest": "^29.4.1",
     "tsup": "^8.5.0",
     "tsx": "4.20.3",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.38.0"
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.39.0"
   },
   "peerDependencies": {
     "@redis/client": ">= 5.5.6",
