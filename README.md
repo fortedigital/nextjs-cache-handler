@@ -121,22 +121,34 @@ const redisHandler = await createRedisHandler({
 });
 ```
 
----
-
-### `redis-cluster-strings`
-
-Same as `redis-strings` but for a Redis cluster using `createCluster`.
+#### Redis Cluster
 
 ```js
-import createRedisClusterHandler from "@fortedigital/nextjs-cache-handler/redis-cluster-strings";
+import { createCluster } from "@redis/client";
+import createRedisHandler from "@fortedigital/nextjs-cache-handler/redis-strings";
+import { withProxy } from "@fortedigital/nextjs-cache-handler/cluster/withProxy";
 
-const redisHandler = await createRedisClusterHandler({
-  client: createCluster({
+const { hostname: redisHostName } = new URL(process.env.REDIS_URL);
+redis = withProxy(
+  createCluster({
     rootNodes: [{ url: process.env.REDIS_URL }],
-  }),
-  keyPrefix: "myApp:",
-  sharedTagsKey: "myTags",
-  sharedTagsTtlKey: "myTagTtls",
+
+    // optional if you use TLS and need to resolve shards' ip to proper hostname
+    nodeAddressMap(address) {
+      const [_, port] = address.split(":");
+
+      return {
+        host: redisHostName,
+        port: Number(port),
+      };
+    },
+  })
+);
+
+// after using withProx you can use redis cluster instance as parameter for createRedisHandler
+const redisCacheHandler = createRedisHandler({
+  client: redis,
+  keyPrefix: CACHE_PREFIX,
 });
 ```
 

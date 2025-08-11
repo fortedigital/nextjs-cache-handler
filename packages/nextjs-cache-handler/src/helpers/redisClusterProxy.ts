@@ -1,38 +1,21 @@
 import type { RedisClusterType } from "@redis/client";
-import { withAbortSignal } from "./withAbortSignal";
 
-export type WithAbortSignalCluster<T extends RedisClusterType> = T & {
-  withAbortSignal(signal: AbortSignal): T;
+export type RedisClusterCacheProxy = RedisClusterType & {
   isReady: boolean;
 };
 
-export function withAbortSignalWrapper<T extends RedisClusterType>(
-  client: T,
-  defaultSignal?: AbortSignal,
-): WithAbortSignalCluster<T> {
-  let signal: AbortSignal | undefined = defaultSignal;
-
+export function withProxy<T extends RedisClusterType>(
+  cluster: RedisClusterType,
+): RedisClusterCacheProxy {
   const handler: ProxyHandler<T> = {
     get(target, prop, receiver) {
-      if (prop === "withAbortSignal") {
-        return (s: AbortSignal) => {
-          signal = s;
-          return new Proxy(client, handler);
-        };
-      }
-
       if (prop === "isReady") {
-        return client.isOpen;
+        return cluster.replicas.every((s) => s.client?.isReady);
       }
 
-      const orig = Reflect.get(target, prop, receiver);
-
-      if (typeof orig !== "function") return orig;
-
-      return (...args: unknown[]) =>
-        withAbortSignal(() => (orig as Function).apply(target, args), signal);
+      return Reflect.get(target, prop, receiver);
     },
   };
 
-  return new Proxy(client, handler) as WithAbortSignalCluster<T>;
+  return new Proxy(cluster, handler) as RedisClusterCacheProxy;
 }
