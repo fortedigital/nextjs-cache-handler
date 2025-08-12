@@ -1,12 +1,12 @@
 import type { RedisClusterType } from "@redis/client";
 
-export type RedisClusterCacheProxy = RedisClusterType & {
+export type RedisClusterCacheAdapter = RedisClusterType & {
   isReady: boolean;
 };
 
-export function withProxy<T extends RedisClusterType>(
+export function withAdapter<T extends RedisClusterType>(
   cluster: RedisClusterType,
-): RedisClusterCacheProxy {
+): RedisClusterCacheAdapter {
   const handler: ProxyHandler<T> = {
     get(target, prop, receiver) {
       if (prop === "isReady") {
@@ -17,5 +17,5 @@ export function withProxy<T extends RedisClusterType>(
     },
   };
 
-  return new Proxy(cluster, handler) as RedisClusterCacheProxy;
+  return new Proxy(cluster, handler) as RedisClusterCacheAdapter;
 }

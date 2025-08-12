@@ -7,7 +7,7 @@ import {
   parseBuffersToStrings,
 } from "../helpers/buffer";
 import type { RedisClientType } from "@redis/client";
-import { RedisClusterCacheProxy } from "../helpers/redisClusterProxy";
+import { RedisClusterCacheAdapter } from "../helpers/redisClusterAdapter";
 import { withAbortSignalProxy } from "../helpers/withAbortSignalProxy";
 
 /**
@@ -34,7 +34,7 @@ export default function createHandler({
   keyExpirationStrategy = "EXPIREAT",
   revalidateTagQuerySize = 10_000,
 }: CreateRedisStringsHandlerOptions<
-  RedisClientType | RedisClusterCacheProxy
+  RedisClientType | RedisClusterCacheAdapter
 >): Handler {
   const client = withAbortSignalProxy(innerClient);
 

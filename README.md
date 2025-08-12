@@ -130,10 +130,10 @@ const redisHandler = await createRedisHandler({
 ```js
 import { createCluster } from "@redis/client";
 import createRedisHandler from "@fortedigital/nextjs-cache-handler/redis-strings";
-import { withProxy } from "@fortedigital/nextjs-cache-handler/cluster/proxy";
+import { withAdapter } from "@fortedigital/nextjs-cache-handler/cluster/adapter";
 
 const { hostname: redisHostName } = new URL(process.env.REDIS_URL);
-redis = withProxy(
+redis = withAdapter(
   createCluster({
     rootNodes: [{ url: process.env.REDIS_URL }],
 
@@ -149,7 +149,7 @@ redis = withProxy(
   })
 );
 
-// after using withProxy you can use redis cluster instance as parameter for createRedisHandler
+// after using withAdapter you can use redis cluster instance as parameter for createRedisHandler
 const redisCacheHandler = createRedisHandler({
   client: redis,
   keyPrefix: CACHE_PREFIX,
