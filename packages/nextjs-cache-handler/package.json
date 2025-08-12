@@ -18,7 +18,7 @@
     "next",
     "redis"
   ],
-  "version": "2.1.0-canary9",
+  "version": "2.1.0-canary10",
   "type": "module",
   "license": "MIT",
   "description": "Next.js cache handlers",
@@ -35,9 +35,9 @@
       "require": "./dist/instrumentation/instrumentation.cjs",
       "import": "./dist/instrumentation/instrumentation.js"
     },
-    "./cluster/proxy": {
-      "require": "./dist/helpers/redisClusterProxy.cjs",
-      "import": "./dist/helpers/redisClusterProxy.js"
+    "./cluster/adapter": {
+      "require": "./dist/helpers/redisClusterAdapter.cjs",
+      "import": "./dist/helpers/redisClusterAdapter.js"
     },
     "./helpers/withAbortSignal": {
       "require": "./dist/helpers/withAbortSignal.cjs",
@@ -65,8 +65,8 @@
       "local-lru": [
         "dist/handlers/local-lru.d.ts"
       ],
-      "cluster/proxy": [
-        "dist/helpers/redisClusterProxy.d.ts"
+      "cluster/adapter": [
+        "dist/helpers/redisClusterAdapter.d.ts"
       ],
       "helpers/withAbortSignal": [
         "dist/helpers/withAbortSignal.d.ts"

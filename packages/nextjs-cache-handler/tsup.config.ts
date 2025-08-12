@@ -5,7 +5,7 @@ export const tsup = defineConfig({
   entry: [
     "src/handlers/*.ts",
     "src/instrumentation/*.ts",
-    "src/helpers/redisClusterProxy.ts",
+    "src/helpers/redisClusterAdapter.ts",
     "src/helpers/withAbortSignal.ts",
     "src/helpers/withAbortSignalProxy.ts",
   ],
