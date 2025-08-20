@@ -125,7 +125,7 @@ const redisHandler = await createRedisHandler({
 });
 ```
 
-#### Redis Cluster
+#### Redis Cluster (Experimental)
 
 ```js
 import { createCluster } from "@redis/client";
@@ -155,6 +155,8 @@ const redisCacheHandler = createRedisHandler({
   keyPrefix: CACHE_PREFIX,
 });
 ```
+
+**Note:** Redis Cluster support is currently experimental and may have limitations or unexpected bugs. Use it with caution.
 
 ---
 

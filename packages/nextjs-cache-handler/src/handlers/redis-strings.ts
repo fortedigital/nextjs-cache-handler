@@ -37,6 +37,7 @@ export default function createHandler({
   RedisClientType | RedisClusterCacheAdapter
 >): Handler {
   const client = withAbortSignalProxy(innerClient);
+  const revalidatedTagsKey = keyPrefix + REVALIDATED_TAGS_KEY;
 
   function assertClientIsReady(): void {
     if (!client.isReady) {
@@ -161,8 +162,6 @@ export default function createHandler({
       updateTtlOperation,
     ]);
   }
-
-  const revalidatedTagsKey = keyPrefix + REVALIDATED_TAGS_KEY;
 
   return {
     name: "redis-strings",
