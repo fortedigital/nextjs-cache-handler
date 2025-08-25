@@ -676,6 +676,15 @@ export class CacheHandler implements NextCacheHandler {
       }
     }
 
+    if (CacheHandler.#debug) {
+      console.info(
+        "[CacheHandler] [method: %s] [key: %s] %s",
+        "get",
+        cacheKey,
+        `Retrieving value ${cachedData ? "found" : "not found"}.`,
+      );
+    }
+
     return cachedData ?? null;
   }
 

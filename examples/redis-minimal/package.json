@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@fortedigital/nextjs-cache-handler": "^2.0.2",
-    "next": "15.4.3",
+    "next": "^15.5.1-canary.7",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "redis": "^5.6.1"
@@ -25,7 +25,7 @@
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-  "eslint": "^9",
+    "eslint": "^9",
     "eslint-config-next": "15.4.3",
     "tailwindcss": "^4",
     "typescript": "^5"

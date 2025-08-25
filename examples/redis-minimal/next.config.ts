@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
       ? require.resolve("./cache-handler.mjs")
       : undefined,
   cacheMaxMemorySize: 0, // disable default in-memory caching
+  experimental: {
+    ppr: "incremental",
+  },
 };
 
 export default nextConfig;
