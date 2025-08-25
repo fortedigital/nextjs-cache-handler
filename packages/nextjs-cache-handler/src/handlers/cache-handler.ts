@@ -660,13 +660,6 @@ export class CacheHandler implements NextCacheHandler {
         implicitTags: softTags ?? [],
       });
 
-    if (cachedData?.value?.kind === "APP_ROUTE") {
-      cachedData.value.body = Buffer.from(
-        cachedData.value.body.toString(),
-        "base64",
-      );
-    }
-
     if (!cachedData && CacheHandler.#fallbackFalseRoutes.has(cacheKey)) {
       cachedData = await CacheHandler.#readPagesRouterPage(cacheKey);
 
@@ -732,18 +725,6 @@ export class CacheHandler implements NextCacheHandler {
     switch (value?.kind) {
       case "APP_PAGE": {
         cacheHandlerValueTags = getTagsFromHeaders(value.headers ?? {});
-        break;
-      }
-      case "APP_ROUTE": {
-        // create a new object to avoid mutating the original value
-        value = {
-          // replace the body with a base64 encoded string to save space
-          body: value.body.toString("base64") as unknown as Buffer,
-          headers: value.headers,
-          kind: value.kind,
-          status: value.status,
-        };
-
         break;
       }
       default: {

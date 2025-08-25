@@ -9,6 +9,8 @@ export default function Page({
   return (
     <section>
       <h1>This will be prerendered</h1>
+      <hr />
+      <h1>This will be dynamic</h1>
       <Suspense fallback={<Skeleton />}>
         <Example searchParams={searchParams} />
       </Suspense>
@@ -17,3 +19,5 @@ export default function Page({
 }
 
 export const experimental_ppr = true;
+
+export const revalidate = 3600;

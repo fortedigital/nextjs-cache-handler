@@ -260,9 +260,9 @@ export async function registerInitialCache(
     let html: string | undefined;
     let pageData: string | object | undefined;
     let meta: NextRouteMetadata | undefined;
-
+    let rscData: string | undefined;
     try {
-      [html, pageData, meta] = await Promise.all([
+      [html, pageData, rscData, meta] = await Promise.all([
         fsPromises.readFile(`${pathToRouteFiles}.html`, "utf-8"),
         fsPromises
           .readFile(
@@ -270,6 +270,11 @@ export async function registerInitialCache(
             "utf-8",
           )
           .then((data) => (isAppRouter ? data : (JSON.parse(data) as object))),
+        isAppRouter
+          ? fsPromises
+              .readFile(`${pathToRouteFiles}.prefetch.rsc`, "utf-8")
+              .then((data) => data)
+          : undefined,
         isAppRouter
           ? fsPromises
               .readFile(`${pathToRouteFiles}.meta`, "utf-8")
@@ -298,7 +303,8 @@ export async function registerInitialCache(
         postponed: meta?.postponed,
         headers: meta?.headers,
         status: meta?.status,
-        rscData: undefined,
+        rscData:
+          isAppRouter && rscData ? Buffer.from(rscData, "utf-8") : undefined,
         segmentData: undefined,
       };
 

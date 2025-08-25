@@ -14,9 +14,7 @@ export function parseBuffersToStrings(cacheHandlerValue: CacheHandlerValue) {
     return;
   }
 
-  const value: IncrementalCacheValue | null = {
-    ...cacheHandlerValue.value,
-  };
+  const value: IncrementalCacheValue | null = cacheHandlerValue.value;
 
   const kind = value?.kind;
 
@@ -27,7 +25,7 @@ export function parseBuffersToStrings(cacheHandlerValue: CacheHandlerValue) {
     if (appRouteValue?.body) {
       // Convert body Buffer to string
       // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L97
-      appRouteData.body = appRouteValue.body.toString();
+      appRouteData.body = appRouteValue.body.toString("base64");
     }
   } else if (kind === "APP_PAGE") {
     const appPageData = value as unknown as RedisCompliantCachedAppPageValue;
@@ -36,7 +34,7 @@ export function parseBuffersToStrings(cacheHandlerValue: CacheHandlerValue) {
     if (appPageValue?.rscData) {
       // Convert rscData Buffer to string
       // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L76
-      appPageData.rscData = appPageValue.rscData.toString();
+      appPageData.rscData = appPageValue.rscData.toString("base64");
     }
 
     if (appPageValue?.segmentData) {
@@ -45,7 +43,7 @@ export function parseBuffersToStrings(cacheHandlerValue: CacheHandlerValue) {
       appPageData.segmentData = Object.fromEntries(
         Array.from(appPageValue.segmentData.entries()).map(([key, value]) => [
           key,
-          value.toString(),
+          value.toString("base64"),
         ]),
       );
     }
@@ -63,7 +61,7 @@ export function convertStringsToBuffers(cacheValue: CacheHandlerValue) {
       // Convert body string to Buffer
       // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L97
       const appRouteValue = value as unknown as CachedRouteValue;
-      appRouteValue.body = Buffer.from(appRouteData.body, "utf-8");
+      appRouteValue.body = Buffer.from(appRouteData.body, "base64");
     }
   } else if (kind === "APP_PAGE") {
     const appPageData = value as unknown as RedisCompliantCachedAppPageValue;
@@ -72,7 +70,7 @@ export function convertStringsToBuffers(cacheValue: CacheHandlerValue) {
     if (appPageData.rscData) {
       // Convert rscData string to Buffer
       // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L76
-      appPageValue.rscData = Buffer.from(appPageData.rscData, "utf-8");
+      appPageValue.rscData = Buffer.from(appPageData.rscData, "base64");
     }
 
     if (appPageData.segmentData) {
@@ -81,7 +79,7 @@ export function convertStringsToBuffers(cacheValue: CacheHandlerValue) {
       appPageValue.segmentData = new Map(
         Object.entries(appPageData.segmentData).map(([key, value]) => [
           key,
-          Buffer.from(value, "utf-8"),
+          Buffer.from(value, "base64"),
         ]),
       );
     }
