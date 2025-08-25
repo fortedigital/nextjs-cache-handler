@@ -158,6 +158,24 @@ const redisCacheHandler = createRedisHandler({
 
 **Note:** Redis Cluster support is currently experimental and may have limitations or unexpected bugs. Use it with caution.
 
+#### Redis Sentinel
+
+```js
+import { createSentinel } from "@redis/";
+import createRedisHandler from "@fortedigital/nextjs-cache-handler/redis-strings";
+
+const redisHandler = await createRedisHandler({
+  client: createSentinel({
+    url: process.env.REDIS_URL,
+  }),
+  keyPrefix: "myApp:",
+  sharedTagsKey: "myTags",
+  sharedTagsTtlKey: "myTagTtls",
+});
+```
+
+**Note:** Redis Sentinel support is currently experimental and may have limitations or unexpected bugs. Use it with caution.
+
 ---
 
 ### `local-lru`

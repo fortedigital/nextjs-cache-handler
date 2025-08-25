@@ -1,4 +1,4 @@
-import type { RedisClientType } from "@redis/client";
+import type { RedisClientType, RedisSentinelType } from "@redis/client";
 import { RedisClusterCacheAdapter } from "../helpers/redisClusterAdapter";
 
 export type RedisCompliantCachedRouteValue = {
@@ -15,7 +15,7 @@ export type RedisCompliantCachedAppPageValue = {
 };
 
 export type CreateRedisStringsHandlerOptions<
-  T = RedisClientType | RedisClusterCacheAdapter,
+  T = RedisClientType | RedisClusterCacheAdapter | RedisSentinelType,
 > = {
   /**
    * The Redis client instance.
