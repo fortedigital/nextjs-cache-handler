@@ -18,7 +18,7 @@
     "next",
     "redis"
   ],
-  "version": "2.1.0-canary.11",
+  "version": "2.1.0-canary.12",
   "type": "module",
   "license": "MIT",
   "description": "Next.js cache handlers",

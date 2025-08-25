@@ -261,6 +261,15 @@ export async function registerInitialCache(
     let pageData: string | object | undefined;
     let meta: NextRouteMetadata | undefined;
     let rscData: string | undefined;
+
+    if (debug) {
+      console.info(
+        "[CacheHandler] [%s] %s",
+        "registerInitialCache",
+        "Reading file system cache",
+      );
+    }
+
     try {
       [html, pageData, rscData, meta] = await Promise.all([
         fsPromises.readFile(`${pathToRouteFiles}.html`, "utf-8"),
@@ -269,11 +278,31 @@ export async function registerInitialCache(
             `${pathToRouteFiles}.${isAppRouter ? "rsc" : "json"}`,
             "utf-8",
           )
-          .then((data) => (isAppRouter ? data : (JSON.parse(data) as object))),
+          .then((data) => (isAppRouter ? data : (JSON.parse(data) as object)))
+          .catch((error) => {
+            console.warn(
+              "[CacheHandler] [%s] %s %s",
+              "registerInitialCache",
+              "Failed to read page data, assuming it does not exist",
+              `Error: ${error}`,
+            );
+
+            return undefined;
+          }),
         isAppRouter
           ? fsPromises
               .readFile(`${pathToRouteFiles}.prefetch.rsc`, "utf-8")
               .then((data) => data)
+              .catch((error) => {
+                console.warn(
+                  "[CacheHandler] [%s] %s %s",
+                  "registerInitialCache",
+                  "Failed to read page prefetch data, assuming it does not exist",
+                  `Error: ${error}`,
+                );
+
+                return undefined;
+              })
           : undefined,
         isAppRouter
           ? fsPromises
@@ -294,9 +323,17 @@ export async function registerInitialCache(
       return;
     }
 
+    if (debug) {
+      console.info(
+        "[CacheHandler] [%s] %s",
+        "registerInitialCache",
+        "Saving file system cache to cache handler",
+      );
+    }
+
     try {
       const value: IncrementalCachedAppPageValue &
-        Pick<IncrementalCachedPageValue, "pageData"> = {
+        Partial<Pick<IncrementalCachedPageValue, "pageData">> = {
         kind: (isAppRouter ? "APP_PAGE" : "PAGES") as unknown as any,
         html,
         pageData,
@@ -305,13 +342,21 @@ export async function registerInitialCache(
         status: meta?.status,
         rscData:
           isAppRouter && rscData ? Buffer.from(rscData, "utf-8") : undefined,
-        segmentData: undefined,
+        segmentData: undefined, // TODO: Add segment data
       };
 
       await cacheHandler.set(cachePath, value, {
         revalidate,
         internal_lastModified: lastModified,
       });
+
+      if (debug) {
+        console.info(
+          "[CacheHandler] [%s] %s",
+          "registerInitialCache",
+          "Saved file system cache to cache handler",
+        );
+      }
     } catch (error) {
       if (debug) {
         console.warn(
