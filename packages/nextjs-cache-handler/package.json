@@ -68,7 +68,7 @@
   },
   "dependencies": {
     "cluster-key-slot": "1.1.2",
-    "lru-cache": "11.1.0"
+    "lru-cache": "11.2.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
