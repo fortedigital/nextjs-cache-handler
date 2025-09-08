@@ -166,7 +166,11 @@ import createRedisHandler from "@fortedigital/nextjs-cache-handler/redis-strings
 
 const redisHandler = await createRedisHandler({
   client: createSentinel({
-    url: process.env.REDIS_URL,
+    name: 'sentinel-db',
+    sentinelRootNodes: [{
+      host: 'example',
+      port: 1234
+    }]
   }),
   keyPrefix: "myApp:",
   sharedTagsKey: "myTags",
