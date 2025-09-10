@@ -305,7 +305,7 @@ CacheHandler.onCreation(() => {
   return global.cacheHandlerConfigPromise;
 });
 
-exports default CacheHandler;
+export default CacheHandler;
 ```
 
 ### 1.x.x
