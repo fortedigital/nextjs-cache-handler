@@ -97,14 +97,6 @@ CacheHandler.onCreation(() => {
     }
   }
 
-  if (process.env.NODE_ENV === "development") {
-    const config = { handlers: [createLruHandler()] };
-    if (isSingleConnectionModeEnabled) {
-      global.cacheHandlerConfig = config;
-    }
-    return config;
-  }
-
   const promise = createCacheConfig();
   if (isSingleConnectionModeEnabled) {
     global.cacheHandlerConfigPromise = promise;
