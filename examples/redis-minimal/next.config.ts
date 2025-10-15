@@ -1,10 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  cacheHandler:
-    process.env.NODE_ENV === "production"
-      ? require.resolve("./cache-handler.mjs")
-      : undefined,
+  cacheHandler: require.resolve("./cache-handler.mjs"),
   cacheMaxMemorySize: 0, // disable default in-memory caching
   experimental: {
     //ppr: "incremental",
