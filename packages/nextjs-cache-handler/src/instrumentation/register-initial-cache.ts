@@ -47,6 +47,12 @@ export type RegisterInitialCacheOptions = {
    * @default true
    */
   routes?: boolean;
+  /**
+   * Override the default build directory.
+   *
+   * @default .next
+   */
+  buildDir?: string;
 };
 
 /**
@@ -89,7 +95,7 @@ export async function registerInitialCache(
   options: RegisterInitialCacheOptions = {},
 ) {
   const debug = typeof process.env.NEXT_PRIVATE_DEBUG_CACHE !== "undefined";
-  const nextJsPath = path.join(process.cwd(), ".next");
+  const nextJsPath = path.join(process.cwd(), options.buildDir ?? ".next");
   const prerenderManifestPath = path.join(nextJsPath, PRERENDER_MANIFEST);
   const serverDistDir = path.join(nextJsPath, SERVER_DIRECTORY);
   const fetchCacheDir = path.join(nextJsPath, "cache", "fetch-cache");
