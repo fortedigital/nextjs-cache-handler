@@ -280,12 +280,14 @@ export async function registerInitialCache(
           )
           .then((data) => (isAppRouter ? data : (JSON.parse(data) as object)))
           .catch((error) => {
-            console.warn(
-              "[CacheHandler] [%s] %s %s",
-              "registerInitialCache",
-              "Failed to read page data, assuming it does not exist",
-              `Error: ${error}`,
-            );
+            if (debug) {
+              console.warn(
+                "[CacheHandler] [%s] %s %s",
+                "registerInitialCache",
+                "Failed to read page data, assuming it does not exist",
+                `Error: ${error}`,
+              );
+            }
 
             return undefined;
           }),
@@ -302,7 +304,7 @@ export async function registerInitialCache(
                     `Error: ${error}`,
                   );
                 }
-                
+
                 return undefined;
               })
           : undefined,
