@@ -294,13 +294,15 @@ export async function registerInitialCache(
               .readFile(`${pathToRouteFiles}.prefetch.rsc`, "utf-8")
               .then((data) => data)
               .catch((error) => {
-                console.warn(
-                  "[CacheHandler] [%s] %s %s",
-                  "registerInitialCache",
-                  "Failed to read page prefetch data, assuming it does not exist",
-                  `Error: ${error}`,
-                );
-
+                if (debug) {
+                  console.warn(
+                    "[CacheHandler] [%s] %s %s",
+                    "registerInitialCache",
+                    "Failed to read page prefetch data, assuming it does not exist",
+                    `Error: ${error}`,
+                  );
+                }
+                
                 return undefined;
               })
           : undefined,
