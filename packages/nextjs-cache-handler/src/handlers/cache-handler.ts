@@ -144,6 +144,10 @@ export class CacheHandler implements NextCacheHandler {
   static async #readPagesRouterPage(
     cacheKey: string,
   ): Promise<CacheHandlerValue | null> {
+    if (cacheKey === "/") {
+      cacheKey = "/index";
+    }
+
     let cacheHandlerValue: CacheHandlerValue | null = null;
     let pageHtmlHandle: fsPromises.FileHandle | null = null;
 
@@ -278,6 +282,10 @@ export class CacheHandler implements NextCacheHandler {
     cacheKey: string,
     pageData: IncrementalCachedPageValue,
   ): Promise<void> {
+    if (cacheKey === "/") {
+      cacheKey = "/index";
+    }
+
     try {
       const pageHtmlPath = path.join(
         CacheHandler.#serverDistDir,

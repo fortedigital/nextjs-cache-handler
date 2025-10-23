@@ -245,7 +245,7 @@ export async function registerInitialCache(
   ) {
     const isAppRouter = router === "app";
 
-    if (isAppRouter && cachePath === "/") {
+    if (cachePath === "/") {
       cachePath = "/index";
     }
 
