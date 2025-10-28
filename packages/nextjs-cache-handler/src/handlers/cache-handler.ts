@@ -669,7 +669,11 @@ export class CacheHandler implements NextCacheHandler {
         implicitTags: softTags ?? [],
       });
 
-    if (!cachedData && CacheHandler.#fallbackFalseRoutes.has(cacheKey)) {
+    if (
+      !cachedData &&
+      process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD &&
+      CacheHandler.#fallbackFalseRoutes.has(cacheKey)
+    ) {
       cachedData = await CacheHandler.#readPagesRouterPage(cacheKey);
 
       // if we have a value from the file system, we should set it to the cache store
@@ -718,9 +722,10 @@ export class CacheHandler implements NextCacheHandler {
 
     const hasFallbackFalse = CacheHandler.#fallbackFalseRoutes.has(cacheKey);
 
-    const lifespan = hasFallbackFalse
-      ? null
-      : CacheHandler.#getLifespanParameters(lastModified, revalidate);
+    const lifespan = CacheHandler.#getLifespanParameters(
+      lastModified,
+      revalidate,
+    );
 
     // If expireAt is in the past, do not cache
     if (lifespan !== null && Date.now() > lifespan.expireAt * 1000) {
