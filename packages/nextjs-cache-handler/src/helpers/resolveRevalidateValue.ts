@@ -29,9 +29,12 @@ export function resolveRevalidateValue(
 
   let revalidate;
 
-  if (cachedFetchValue.kind === "FETCH") {
+  if (cachedFetchValue?.kind === "FETCH") {
     revalidate = cachedFetchValue.revalidate;
-  } else if (cachedPageValue.kind === "APP_PAGE") {
+  } else if (
+    cachedPageValue?.kind === "APP_PAGE" ||
+    cachedPageValue?.kind === "PAGES"
+  ) {
     revalidate = responseCacheCtx.cacheControl?.revalidate;
   }
 

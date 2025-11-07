@@ -25,6 +25,8 @@ type Router = "pages" | "app";
 
 const PRERENDER_MANIFEST_VERSION = 4;
 
+const DEFAULT_BUILD_DIR = ".next";
+
 /**
  * Options for the `registerInitialCache` instrumentation.
  */
@@ -47,6 +49,12 @@ export type RegisterInitialCacheOptions = {
    * @default true
    */
   routes?: boolean;
+  /**
+   * Override the default build directory.
+   *
+   * @default .next
+   */
+  buildDir?: string;
 };
 
 /**
@@ -89,7 +97,10 @@ export async function registerInitialCache(
   options: RegisterInitialCacheOptions = {},
 ) {
   const debug = typeof process.env.NEXT_PRIVATE_DEBUG_CACHE !== "undefined";
-  const nextJsPath = path.join(process.cwd(), ".next");
+  const nextJsPath = path.join(
+    process.cwd(),
+    options.buildDir ?? DEFAULT_BUILD_DIR,
+  );
   const prerenderManifestPath = path.join(nextJsPath, PRERENDER_MANIFEST);
   const serverDistDir = path.join(nextJsPath, SERVER_DIRECTORY);
   const fetchCacheDir = path.join(nextJsPath, "cache", "fetch-cache");
@@ -234,7 +245,7 @@ export async function registerInitialCache(
   ) {
     const isAppRouter = router === "app";
 
-    if (isAppRouter && cachePath === "/") {
+    if (cachePath === "/") {
       cachePath = "/index";
     }
 
@@ -280,12 +291,14 @@ export async function registerInitialCache(
           )
           .then((data) => (isAppRouter ? data : (JSON.parse(data) as object)))
           .catch((error) => {
-            console.warn(
-              "[CacheHandler] [%s] %s %s",
-              "registerInitialCache",
-              "Failed to read page data, assuming it does not exist",
-              `Error: ${error}`,
-            );
+            if (debug) {
+              console.warn(
+                "[CacheHandler] [%s] %s %s",
+                "registerInitialCache",
+                "Failed to read page data, assuming it does not exist",
+                `Error: ${error}`,
+              );
+            }
 
             return undefined;
           }),
@@ -294,12 +307,14 @@ export async function registerInitialCache(
               .readFile(`${pathToRouteFiles}.prefetch.rsc`, "utf-8")
               .then((data) => data)
               .catch((error) => {
-                console.warn(
-                  "[CacheHandler] [%s] %s %s",
-                  "registerInitialCache",
-                  "Failed to read page prefetch data, assuming it does not exist",
-                  `Error: ${error}`,
-                );
+                if (debug) {
+                  console.warn(
+                    "[CacheHandler] [%s] %s %s",
+                    "registerInitialCache",
+                    "Failed to read page prefetch data, assuming it does not exist",
+                    `Error: ${error}`,
+                  );
+                }
 
                 return undefined;
               })

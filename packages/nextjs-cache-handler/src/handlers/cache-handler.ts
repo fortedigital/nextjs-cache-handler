@@ -24,6 +24,7 @@ import {
   SetIncrementalFetchCacheContext,
 } from "next/dist/server/response-cache/types";
 import { resolveRevalidateValue } from "../helpers/resolveRevalidateValue";
+import { PHASE_PRODUCTION_BUILD } from "next/constants.js";
 
 const PRERENDER_MANIFEST_VERSION = 4;
 
@@ -143,6 +144,10 @@ export class CacheHandler implements NextCacheHandler {
   static async #readPagesRouterPage(
     cacheKey: string,
   ): Promise<CacheHandlerValue | null> {
+    if (cacheKey === "/") {
+      cacheKey = "/index";
+    }
+
     let cacheHandlerValue: CacheHandlerValue | null = null;
     let pageHtmlHandle: fsPromises.FileHandle | null = null;
 
@@ -277,6 +282,10 @@ export class CacheHandler implements NextCacheHandler {
     cacheKey: string,
     pageData: IncrementalCachedPageValue,
   ): Promise<void> {
+    if (cacheKey === "/") {
+      cacheKey = "/index";
+    }
+
     try {
       const pageHtmlPath = path.join(
         CacheHandler.#serverDistDir,
@@ -660,7 +669,11 @@ export class CacheHandler implements NextCacheHandler {
         implicitTags: softTags ?? [],
       });
 
-    if (!cachedData && CacheHandler.#fallbackFalseRoutes.has(cacheKey)) {
+    if (
+      !cachedData &&
+      process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD &&
+      CacheHandler.#fallbackFalseRoutes.has(cacheKey)
+    ) {
       cachedData = await CacheHandler.#readPagesRouterPage(cacheKey);
 
       // if we have a value from the file system, we should set it to the cache store
@@ -709,9 +722,10 @@ export class CacheHandler implements NextCacheHandler {
 
     const hasFallbackFalse = CacheHandler.#fallbackFalseRoutes.has(cacheKey);
 
-    const lifespan = hasFallbackFalse
-      ? null
-      : CacheHandler.#getLifespanParameters(lastModified, revalidate);
+    const lifespan = CacheHandler.#getLifespanParameters(
+      lastModified,
+      revalidate,
+    );
 
     // If expireAt is in the past, do not cache
     if (lifespan !== null && Date.now() > lifespan.expireAt * 1000) {
@@ -741,14 +755,21 @@ export class CacheHandler implements NextCacheHandler {
 
     await CacheHandler.#mergedHandler.set(cacheKey, cacheHandlerValue);
 
-    if (hasFallbackFalse && cacheHandlerValue.value?.kind === "APP_PAGE") {
+    if (
+      process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD &&
+      hasFallbackFalse &&
+      cacheHandlerValue.value?.kind === "APP_PAGE"
+    ) {
       await CacheHandler.#writePagesRouterPage(
         cacheKey,
         cacheHandlerValue.value as unknown as IncrementalCachedPageValue,
       );
     }
 
-    if (cacheHandlerValue.value?.kind === "FETCH") {
+    if (
+      process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD &&
+      cacheHandlerValue.value?.kind === "FETCH"
+    ) {
       await CacheHandler.#writeFetch(
         cacheKey,
         cacheHandlerValue.value as unknown as CachedFetchValue,
