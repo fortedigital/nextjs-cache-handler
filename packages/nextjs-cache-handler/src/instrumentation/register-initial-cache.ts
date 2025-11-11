@@ -57,6 +57,17 @@ export type RegisterInitialCacheOptions = {
    * @default .next
    */
   buildDir?: string;
+  /**
+   * The maximum number of concurrent operations.
+   * This speeds up the initial cache population because routes are read and processed in parallel.
+   * The default value is either `os.availableParallelism()` (i.e., in most cases the number of CPU cores) or,
+   * since most Next.js instances only have a single CPU core, 4, whichever is higher.
+   * Depending on your specific needs, this value can be adjusted to optimize the startup performance.
+   * By supplying 1, you can disable parallelism and run all operations sequentially.
+   *
+   * @default Math.max(4, os.availableParallelism())
+   */
+  parallelism?: number;
 };
 
 /**
@@ -388,7 +399,11 @@ export async function registerInitialCache(
     }
   }
 
-  const limit = pLimit(os.availableParallelism());
+  // We either take a user-supplied parallelism value or use the default value
+  // of 4 or os.availableParallelism(), whichever is higher.
+  const limit = pLimit(
+    options.parallelism ?? Math.max(4, os.availableParallelism()),
+  );
 
   const promises = Object.entries(prerenderManifest.routes).map(
     ([cachePath, { dataRoute, initialRevalidateSeconds }]) =>
