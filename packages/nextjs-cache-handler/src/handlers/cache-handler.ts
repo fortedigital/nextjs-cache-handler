@@ -126,6 +126,8 @@ export class CacheHandler implements NextCacheHandler {
 
   static #mergedHandler: Omit<Handler, "name">;
 
+  static #configureTask: Promise<void> | undefined;
+
   static #cacheListLength: number;
 
   static #debug = typeof process.env.NEXT_PRIVATE_DEBUG_CACHE !== "undefined";
@@ -381,13 +383,13 @@ export class CacheHandler implements NextCacheHandler {
    *
    * @param onCreationHook - The {@link OnCreationHook} function to be called during cache creation.
    *
-   
+
    */
   static onCreation(onCreationHook: OnCreationHook): void {
     CacheHandler.#onCreationHook = onCreationHook;
   }
 
-  static async #configureCacheHandler(): Promise<void> {
+  static async #ensureConfigured(): Promise<void> {
     if (CacheHandler.#mergedHandler) {
       if (CacheHandler.#debug) {
         console.info(
@@ -395,6 +397,24 @@ export class CacheHandler implements NextCacheHandler {
           "Using existing CacheHandler configuration.",
         );
       }
+      return;
+    }
+
+    if (!CacheHandler.#configureTask) {
+      CacheHandler.#configureTask = (async () => {
+        try {
+          await CacheHandler.#configureCacheHandlerInternal();
+        } finally {
+          CacheHandler.#configureTask = undefined;
+        }
+      })();
+    }
+
+    await CacheHandler.#configureTask;
+  }
+
+  static async #configureCacheHandlerInternal(): Promise<void> {
+    if (CacheHandler.#mergedHandler) {
       return;
     }
 
@@ -651,7 +671,7 @@ export class CacheHandler implements NextCacheHandler {
       | (GetIncrementalResponseCacheContext & { softTags?: null | [] })
       | { softTags: [] } = { softTags: [] },
   ): Promise<CacheHandlerValue | null> {
-    await CacheHandler.#configureCacheHandler();
+    await CacheHandler.#ensureConfigured();
 
     const { softTags = [] } = ctx;
 
@@ -703,7 +723,7 @@ export class CacheHandler implements NextCacheHandler {
       revalidate?: Revalidate;
     },
   ): Promise<void> {
-    await CacheHandler.#configureCacheHandler();
+    await CacheHandler.#ensureConfigured();
 
     if (CacheHandler.#debug) {
       console.info(
@@ -781,7 +801,7 @@ export class CacheHandler implements NextCacheHandler {
   async revalidateTag(
     tag: CacheHandlerParametersRevalidateTag[0],
   ): Promise<void> {
-    await CacheHandler.#configureCacheHandler();
+    await CacheHandler.#ensureConfigured();
 
     const tags = typeof tag === "string" ? [tag] : tag;
 

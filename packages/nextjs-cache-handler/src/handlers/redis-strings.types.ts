@@ -39,7 +39,7 @@ export type CreateRedisStringsHandlerOptions<
   /**
    * Optional. The number of tags in a single query retrieved from Redis when scanning or searching for tags.
    *
-   * @default 100 // 100 tags
+   * @default 10_000 // 10,000 tags
    *
    * @remarks
    * You can adjust this value to optimize the number of commands sent to Redis when scanning or searching for tags.

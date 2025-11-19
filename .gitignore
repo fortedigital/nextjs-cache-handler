@@ -1,0 +1,23 @@
+# Turborepo
+.turbo
+
+# Dependencies
+node_modules
+
+
+# Build outputs
+dist
+.next
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+

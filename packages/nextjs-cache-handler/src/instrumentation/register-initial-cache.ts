@@ -1,5 +1,6 @@
 import { promises as fsPromises } from "node:fs";
 import path from "node:path";
+import os from "node:os";
 import { PRERENDER_MANIFEST, SERVER_DIRECTORY } from "next/constants";
 import type { PrerenderManifest } from "next/dist/build";
 import { CACHE_ONE_YEAR } from "next/dist/lib/constants";
@@ -12,6 +13,7 @@ import {
 import type { OutgoingHttpHeaders } from "http";
 import { getTagsFromHeaders } from "../helpers/getTagsFromHeaders";
 import { Revalidate } from "../handlers/cache-handler.types";
+import pLimit from "p-limit";
 
 type CacheHandlerType = typeof import("../handlers/cache-handler").CacheHandler;
 
@@ -55,6 +57,17 @@ export type RegisterInitialCacheOptions = {
    * @default .next
    */
   buildDir?: string;
+  /**
+   * The maximum number of concurrent operations.
+   * This speeds up the initial cache population because routes are read and processed in parallel.
+   * The default value is either `os.availableParallelism()` (i.e., in most cases the number of CPU cores) or,
+   * since most Next.js instances only have a single CPU core, 4, whichever is higher.
+   * Depending on your specific needs, this value can be adjusted to optimize the startup performance.
+   * By supplying 1, you can disable parallelism and run all operations sequentially.
+   *
+   * @default Math.max(4, os.availableParallelism())
+   */
+  parallelism?: number;
 };
 
 /**
@@ -386,18 +399,26 @@ export async function registerInitialCache(
     }
   }
 
-  for (const [
-    cachePath,
-    { dataRoute, initialRevalidateSeconds },
-  ] of Object.entries(prerenderManifest.routes)) {
-    if (populatePages && dataRoute?.endsWith(".json")) {
-      await setPageCache(cachePath, "pages", initialRevalidateSeconds);
-    } else if (populatePages && dataRoute?.endsWith(".rsc")) {
-      await setPageCache(cachePath, "app", initialRevalidateSeconds);
-    } else if (populateRoutes && dataRoute === null) {
-      await setRouteCache(cachePath, "app", initialRevalidateSeconds);
-    }
-  }
+  // We either take a user-supplied parallelism value or use the default value
+  // of 4 or os.availableParallelism(), whichever is higher.
+  const limit = pLimit(
+    options.parallelism ?? Math.max(4, os.availableParallelism()),
+  );
+
+  const promises = Object.entries(prerenderManifest.routes).map(
+    ([cachePath, { dataRoute, initialRevalidateSeconds }]) =>
+      limit(async () => {
+        if (populatePages && dataRoute?.endsWith(".json")) {
+          await setPageCache(cachePath, "pages", initialRevalidateSeconds);
+        } else if (populatePages && dataRoute?.endsWith(".rsc")) {
+          await setPageCache(cachePath, "app", initialRevalidateSeconds);
+        } else if (populateRoutes && dataRoute === null) {
+          await setRouteCache(cachePath, "app", initialRevalidateSeconds);
+        }
+      }),
+  );
+
+  await Promise.all(promises);
 
   if (!populateFetch) {
     return;

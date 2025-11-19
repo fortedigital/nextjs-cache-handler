@@ -23,13 +23,13 @@ jobs:
       - name: Copy README file to package directory
         run: |
           cp ../../README.md .
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          cache: npm
+          cache: pnpm
           node-version: lts/*
-          cache-dependency-path: ${{ env.rootDir }}/package-lock.json
           registry-url: "https://registry.npmjs.org"
-      - run: npm ci
+      - run: pnpm install --frozen-lockfile
       - name: Publish to npm
         run: |
           if [ "${{ github.event.inputs.prerelease }}" == "true" ]; then

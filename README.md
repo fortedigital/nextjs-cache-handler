@@ -473,6 +473,104 @@ This project was originally based on [`@neshca/cache-handler`](https://www.npmjs
 
 For context or historical documentation, you may still reference the [original project](https://caching-tools.github.io/next-shared-cache).
 
+## neshClassicCache
+
+⚠️ Deprecated: This function was migrated from @neshca for compatibility purposes only. Use with caution - no further development or support is planned.
+
+`neshClassicCache` allows you to cache the results of expensive operations, like database queries, and reuse them across multiple requests. Unlike the [`neshCache`](/functions/nesh-cache) or [`unstable_cache` ↗](https://nextjs.org/docs/app/api-reference/functions/unstable_cache) function, `neshClassicCache` must be used in a Next.js Pages Router allowing users to cache data in the `getServerSideProps` and API routes.
+
+
+> [!NOTE]
+>
+> Cache entries created with `neshClassicCache` can be revalidated only by the [`revalidateTag` ↗](https://nextjs.org/docs/app/api-reference/functions/revalidateTag) method.
+
+### Parameters
+
+#### `fetchData`
+
+This is an asynchronous function that fetches the data you want to cache. It must be a function that returns a `Promise`.
+
+#### `commonOptions`
+
+This is an object that controls how the cache behaves. It can contain the following properties:
+
+- `tags` - An array of tags to associate with the cached result. Tags are used to revalidate the cache using the `revalidateTag` and `revalidatePath` functions.
+
+- `revalidate` - The revalidation interval in seconds. Must be a positive integer or `false` to disable revalidation. Defaults to `export const revalidate = time;` in the current route.
+
+- `argumentsSerializer` - A function that serializes the arguments passed to the callback function. Use it to create a cache key. Defaults to `JSON.stringify(args)`.
+
+- `resultSerializer` - A function that serializes the result of the callback function.Defaults to `Buffer.from(JSON.stringify(data)).toString('base64')`.
+
+- `resultDeserializer` - A function that deserializes the string representation of the result of the callback function. Defaults to `JSON.parse(Buffer.from(data, 'base64').toString('utf-8'))`.
+
+- `responseContext` - The response context object. If provided, it is used to set the cache headers acoording to the `revalidate` option. Defaults to `undefined`.
+
+### Returns
+
+`neshClassicCache` returns a function that when invoked, returns a `Promise` that resolves to the cached data. If the data is not in the cache, the provided function will be invoked, and its result will be cached and returned. The first argument is the `options` which can be used to override the common [`options`](/functions/nesh-classic-cache#commonoptions). In addition, there is a `cacheKey` option that can be used to provide a custom cache key.
+
+### Example
+
+```jsx filename="src/pages/api/api-example.js" copy
+import { neshClassicCache } from '@fortedigital/nextjs-cache-handler/functions';
+import axios from 'axios';
+
+export const config = {
+  runtime: 'nodejs',
+};
+
+async function getViaAxios(url) {
+  try {
+    return (await axios.get(url.href)).data;
+  } catch (_error) {
+    return null;
+  }
+}
+
+const cachedAxios = neshClassicCache(getViaAxios);
+
+export default async function handler(request, response) {
+  if (request.method !== 'GET') {
+    return response.status(405).send(null);
+  }
+
+  const revalidate = 5;
+
+  const url = new URL('https://api.example.com/data.json');
+
+  // Add tags to be able to revalidate the cache
+  const data = await cachedAxios(
+    { revalidate, tags: [url.pathname], responseContext: response },
+    url,
+  );
+
+  if (!data) {
+    response.status(404).send('Not found');
+
+    return;
+  }
+
+  response.json(data);
+}
+```
+
+---
+
+## Contributing
+
+This project uses [Turborepo](https://turbo.build/repo) to manage the monorepo structure with the main package and examples.
+
+### Prerequisites
+
+- Node.js >= 22.0.0
+- pnpm >= 9.0.0
+
+### Development Workflow
+
+- **Start dev server**: `pnpm dev` (runs all dev servers in parallel)
+- **Run all tests**: `pnpm test`
+
 ---
 
 ## License
