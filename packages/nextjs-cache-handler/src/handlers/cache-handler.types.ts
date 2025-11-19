@@ -1,3 +1,4 @@
+import { CacheEntry } from "next/dist/server/lib/cache-handlers/types.js";
 import type {
   CacheHandler as NextCacheHandler,
   CacheHandlerValue as NextCacheHandlerValue,
@@ -59,7 +60,9 @@ export type HandlerGetMeta = {
 /**
  * Represents a cache Handler.
  */
-export type Handler = {
+export type Handler<
+  T extends CacheHandlerValue | CacheHandlersValue = CacheHandlerValue,
+> = {
   /**
    * A descriptive name for the cache Handler.
    */
@@ -114,16 +117,13 @@ export type Handler = {
    * }
    * ```
    */
-  get: (
-    key: string,
-    meta: HandlerGetMeta,
-  ) => Promise<CacheHandlerValue | null | undefined>;
+  get: (key: string, meta: HandlerGetMeta) => Promise<T | null | undefined>;
   /**
    * Sets or updates a value in the cache store.
    *
    * @param key - The unique string identifier for the cache entry.
    *
-   * @param value - The value to be stored in the cache. See {@link CacheHandlerValue}.
+   * @param value - The value to be stored in the cache. See {@link T}.
    *
    * @returns A Promise that resolves when the value has been successfully set in the cache.
    *
@@ -137,7 +137,7 @@ export type Handler = {
    *
    * Use the absolute time (`expireAt`) to set and expiration time for the cache entry in your cache store to be in sync with the file system cache.
    */
-  set: (key: string, value: CacheHandlerValue) => Promise<void>;
+  set: (key: string, value: T) => Promise<void>;
   /**
    * Deletes all cache entries that are associated with the specified tag.
    * See [fetch `options.next.tags` and `revalidateTag` ↗](https://nextjs.org/docs/app/building-your-application/caching#fetch-optionsnexttags-and-revalidatetag)
@@ -183,12 +183,14 @@ export type TTLParameters = {
 /**
  * Configuration options for the {@link CacheHandler}.
  */
-export type CacheHandlerConfig = {
+export type CacheHandlerConfig<
+  T extends CacheHandlerValue | CacheHandlersValue = CacheHandlerValue,
+> = {
   /**
    * An array of cache instances that conform to the Handler interface.
    * Multiple caches can be used to implement various caching strategies or layers.
    */
-  handlers: (Handler | undefined | null)[];
+  handlers: (Handler<T> | undefined | null)[];
   /**
    * Time-to-live (TTL) options for the cache entries.
    */
@@ -329,7 +331,7 @@ export type FileSystemCacheContext = ConstructorParameters<
   typeof FileSystemCache
 >[0];
 
-export type CacheHandlerValue = NextCacheHandlerValue & {
+export type CacheHandlerMeta = {
   /**
    * Timestamp in milliseconds when the cache entry was last modified.
    */
@@ -346,3 +348,12 @@ export type CacheHandlerValue = NextCacheHandlerValue & {
    */
   lifespan: LifespanParameters | null;
 };
+
+export type CacheHandlerValue = NextCacheHandlerValue & CacheHandlerMeta;
+
+export type BufferedCacheEntry = Omit<CacheEntry, "value"> & {
+  value: Buffer;
+};
+export type CacheHandlersValue = {
+  value: BufferedCacheEntry;
+} & CacheHandlerMeta;

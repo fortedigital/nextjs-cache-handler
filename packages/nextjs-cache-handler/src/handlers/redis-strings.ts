@@ -1,6 +1,10 @@
 import { REVALIDATED_TAGS_KEY } from "../constants";
 import { isImplicitTag } from "../helpers/isImplicitTag";
-import { CacheHandlerValue, Handler } from "./cache-handler.types";
+import {
+  CacheHandlersValue,
+  CacheHandlerValue,
+  Handler,
+} from "./cache-handler.types";
 import { CreateRedisStringsHandlerOptions } from "./redis-strings.types";
 import {
   convertStringsToBuffers,
@@ -25,7 +29,9 @@ import { withAbortSignalProxy } from "../helpers/withAbortSignalProxy";
  * - The `set` method stores a value in the cache, using the configured expiration strategy.
  * - The `revalidateTag` and `delete` methods handle cache revalidation and deletion.
  */
-export default function createHandler({
+export default function createHandler<
+  T extends CacheHandlerValue | CacheHandlersValue = CacheHandlerValue,
+>({
   client: innerClient,
   keyPrefix = "",
   sharedTagsKey = "__sharedTags__",
@@ -35,7 +41,7 @@ export default function createHandler({
   revalidateTagQuerySize = 10_000,
 }: CreateRedisStringsHandlerOptions<
   RedisClientType | RedisClusterCacheAdapter
->): Handler {
+>): Handler<T> {
   const client = withAbortSignalProxy(innerClient);
   const revalidatedTagsKey = keyPrefix + REVALIDATED_TAGS_KEY;
 
@@ -176,7 +182,7 @@ export default function createHandler({
         return null;
       }
 
-      const cacheValue = JSON.parse(result) as CacheHandlerValue | null;
+      const cacheValue = JSON.parse(result) as T | null;
 
       if (!cacheValue) {
         return null;

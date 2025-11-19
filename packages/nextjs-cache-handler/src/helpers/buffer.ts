@@ -3,18 +3,35 @@ import {
   CachedRouteValue,
   IncrementalCachedAppPageValue,
 } from "next/dist/server/response-cache";
-import { CacheHandlerValue } from "../handlers/cache-handler.types";
+import {
+  BufferedCacheEntry,
+  CacheHandlersValue,
+  CacheHandlerValue,
+} from "../handlers/cache-handler.types";
 import {
   RedisCompliantCachedRouteValue,
   RedisCompliantCachedAppPageValue,
+  RedisCompliantCacheEntry,
 } from "../handlers/redis-strings.types";
 
-export function parseBuffersToStrings(cacheHandlerValue: CacheHandlerValue) {
+export function parseBuffersToStrings(
+  cacheHandlerValue: CacheHandlerValue | CacheHandlersValue,
+) {
   if (!cacheHandlerValue?.value) {
     return;
   }
 
-  const value: IncrementalCacheValue | null = cacheHandlerValue.value;
+  const value: IncrementalCacheValue | BufferedCacheEntry | null =
+    cacheHandlerValue.value;
+
+  if (value && !("kind" in value)) {
+    const cacheEntryData = value as unknown as RedisCompliantCacheEntry;
+    const cacheEntryValue = value as unknown as BufferedCacheEntry;
+
+    cacheEntryData.value = cacheEntryValue.value.toString("base64");
+
+    return;
+  }
 
   const kind = value?.kind;
 
@@ -50,8 +67,20 @@ export function parseBuffersToStrings(cacheHandlerValue: CacheHandlerValue) {
   }
 }
 
-export function convertStringsToBuffers(cacheValue: CacheHandlerValue) {
+export function convertStringsToBuffers(
+  cacheValue: CacheHandlerValue | CacheHandlersValue,
+) {
   const value = cacheValue.value;
+
+  if (value && !("kind" in value)) {
+    const cacheEntryData = value as unknown as RedisCompliantCacheEntry;
+    const cacheEntryValue = value as unknown as BufferedCacheEntry;
+
+    cacheEntryValue.value = Buffer.from(cacheEntryData.value, "base64");
+
+    return;
+  }
+
   const kind = value?.kind;
 
   if (kind === "APP_ROUTE") {

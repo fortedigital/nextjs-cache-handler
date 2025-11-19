@@ -1,5 +1,6 @@
 import type { RedisClientType } from "@redis/client";
 import { RedisClusterCacheAdapter } from "../helpers/redisClusterAdapter";
+import { Timestamp } from "next/dist/server/lib/cache-handlers/types.js";
 
 export type RedisCompliantCachedRouteValue = {
   // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L97
@@ -12,6 +13,16 @@ export type RedisCompliantCachedAppPageValue = {
   kind: "APP_PAGE";
   rscData: string | undefined;
   segmentData: Record<string, string> | undefined;
+};
+
+export type RedisCompliantCacheEntry = {
+  // See: https://github.com/vercel/next.js/blob/954354f2ab24002bd310940438e7bf0116e646ab/packages/next/src/server/lib/cache-handlers/types.ts#L12
+  value: string;
+  tags: string[];
+  stale: number;
+  timestamp: Timestamp;
+  expire: number;
+  revalidate: number;
 };
 
 export type CreateRedisStringsHandlerOptions<
