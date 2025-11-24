@@ -120,16 +120,6 @@ This example uses a custom Redis cache handler configured in `cache-handler.mjs`
 
 **Note:** The cache handler only works in production mode. In development mode, Next.js bypasses the cache handler entirely. You'll see a warning message in the console: `"Next.js does not use the cache in development mode. Use production mode to enable caching."`
 
-## UI Features
-
-- **Shared Navigation**: Easy navigation between examples
-- **Consistent Layout**: Coherent UI across all examples
-- **Clear Cache Buttons**: Interactive buttons to test cache invalidation
-- **Information Cards**: Detailed explanations of how each example works
-- **Code Examples**: Inline code snippets showing implementation
-- **Cache Information**: Display of cache tags, revalidation periods, and timestamps
-- **Dark Mode Support**: Automatic dark mode based on system preferences
-
 ## Technologies
 
 - Next.js 16
