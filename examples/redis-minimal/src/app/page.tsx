@@ -3,6 +3,39 @@ import { ExampleLayout } from "@/components/ExampleLayout";
 
 const examples = [
   {
+    href: "/examples/default-cache",
+    title: "Default Cache (force-cache)",
+    description:
+      "Demonstrates the default fetch caching behavior. Next.js uses 'force-cache' by default, which caches data indefinitely until manually invalidated.",
+    features: [
+      "Default caching behavior",
+      "Indefinite cache duration",
+      "Perfect for static data",
+    ],
+  },
+  {
+    href: "/examples/no-store",
+    title: "No Store (Always Fresh)",
+    description:
+      "Shows fetch with 'no-store' option, which always fetches fresh data and never caches the response. Perfect for real-time or user-specific data.",
+    features: [
+      "Never caches responses",
+      "Always fetches fresh data",
+      "Real-time data updates",
+    ],
+  },
+  {
+    href: "/examples/time-based-revalidation",
+    title: "Time-based Revalidation",
+    description:
+      "Shows fetch with time-based revalidation. Data is cached and automatically revalidated after a specified time period, balancing freshness with performance.",
+    features: [
+      "Automatic revalidation",
+      "Configurable time period (30 seconds)",
+      "Balances freshness and performance",
+    ],
+  },
+  {
     href: "/examples/fetch-tags",
     title: "Fetch with Tags",
     description:
@@ -11,6 +44,18 @@ const examples = [
       "Time-based revalidation (24 hours)",
       "Cache tags for selective invalidation",
       "Clear cache button to test tag revalidation",
+    ],
+  },
+  {
+    href: "/examples/unstable-cache",
+    title: "unstable_cache",
+    description:
+      "Demonstrates persistent caching with unstable_cache. Cache function results across requests with tags and revalidation. Compare with fetch caching.",
+    features: [
+      "Cache any function, not just fetch",
+      "Tags and revalidation support",
+      "Side-by-side comparison with fetch",
+      "Perfect for database queries and computations",
     ],
   },
   {
