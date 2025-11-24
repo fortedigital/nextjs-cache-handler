@@ -36,6 +36,13 @@ export async function POST(request: NextRequest) {
     }
 
     if (path) {
+      const type = body.type as "page" | "layout" | undefined;
+      if (type) {
+        revalidatePath(path, type);
+        return new Response(`Cache revalidated for ${type}: ${path}`, {
+          status: 200,
+        });
+      }
       revalidatePath(path);
       return new Response(`Cache revalidated for path: ${path}`, {
         status: 200,
@@ -51,4 +58,3 @@ export async function POST(request: NextRequest) {
     });
   }
 }
-
