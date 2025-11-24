@@ -6,6 +6,7 @@ First, run the development server:
 
 ```bash
 npm i
+npm run build # important to run once to create cacheHandler dist file
 npm run dev
 ```
 
