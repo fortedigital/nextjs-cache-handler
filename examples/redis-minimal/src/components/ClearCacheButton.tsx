@@ -16,13 +16,13 @@ export function ClearCacheButton({
     setLoading(true);
     setMessage(null);
     try {
-      const response = await fetch(`/api/revalidate?tag=${tag}`);
+      const response = await fetch(`/api/revalidate?tag=${tag}&cacheLife=max`);
       const text = await response.text();
       setMessage(text);
       setTimeout(() => {
         window.location.reload();
       }, 500);
-    } catch (error) {
+    } catch {
       setMessage("Error clearing cache");
     } finally {
       setLoading(false);
