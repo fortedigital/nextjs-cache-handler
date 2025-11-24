@@ -10,7 +10,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@fortedigital/nextjs-cache-handler": "workspace:*",
@@ -20,7 +20,6 @@
     "redis": "^5.10.0"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24",
     "@types/react": "19.2.6",

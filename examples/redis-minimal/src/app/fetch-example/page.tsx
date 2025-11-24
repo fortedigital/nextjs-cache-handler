@@ -1,4 +1,5 @@
 export default async function Home() {
+  let name: string;
   try {
     const characterResponse = await fetch(
       "https://api.sampleapis.com/futurama/characters/1",
@@ -10,13 +11,7 @@ export default async function Home() {
       }
     );
     const character = await characterResponse.json();
-    const name = character.name.first;
-    return (
-      <div>
-        <h1>Name: {name}</h1>
-        <span>{new Date().toISOString()}</span>
-      </div>
-    );
+    name = character.name.first;
   } catch (error) {
     console.error("Error fetching character data:", error);
     return (
@@ -25,4 +20,11 @@ export default async function Home() {
       </div>
     );
   }
+
+  return (
+    <div>
+      <h1>Name: {name}</h1>
+      <span>{new Date().toISOString()}</span>
+    </div>
+  );
 }

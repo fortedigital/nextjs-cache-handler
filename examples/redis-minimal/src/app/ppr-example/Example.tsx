@@ -4,6 +4,7 @@ export async function Example({
   searchParams: Promise<{ characterId: string }>;
 }) {
   const characterId = (await searchParams).characterId;
+  let name: string;
   try {
     const characterResponse = await fetch(
       `https://api.sampleapis.com/futurama/characters/${characterId}`,
@@ -15,13 +16,7 @@ export async function Example({
       }
     );
     const character = await characterResponse.json();
-    const name = character.name.first;
-    return (
-      <div>
-        <h1>Name: {name}</h1>
-        <span>{new Date().toISOString()}</span>
-      </div>
-    );
+    name = character.name.first;
   } catch (error) {
     console.error("Error fetching character data:", error);
     return (
@@ -30,6 +25,13 @@ export async function Example({
       </div>
     );
   }
+
+  return (
+    <div>
+      <h1>Name: {name}</h1>
+      <span>{new Date().toISOString()}</span>
+    </div>
+  );
 }
 
 export async function Skeleton() {
