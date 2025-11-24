@@ -32,6 +32,11 @@ const examples = [
     description: "Persistent function caching",
   },
   {
+    href: "/examples/revalidate-tag-cachelife",
+    label: "revalidateTag cacheLife",
+    description: "Next.js 16 cacheLife profiles",
+  },
+  {
     href: "/examples/isr/blog/1",
     label: "ISR",
     description: "Incremental Static Regeneration",

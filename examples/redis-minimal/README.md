@@ -127,7 +127,26 @@ Demonstrates persistent caching with `unstable_cache` for function results.
 - Click "Clear Tag Cache" to invalidate both caches
 - Understand when to use unstable_cache vs fetch
 
-### 7. ISR with Static Params (`/examples/isr/blog/[id]`)
+### 7. revalidateTag() with cacheLife (`/examples/revalidate-tag-cachelife`)
+
+Demonstrates the updated `revalidateTag()` API in Next.js 16 with cacheLife profiles.
+
+**Features:**
+
+- Breaking change from Next.js 15 (cacheLife now required)
+- Different cacheLife profiles: 'max', 'hours', 'days'
+- Stale-while-revalidate behavior
+- Examples for each profile type
+- Code examples showing migration from Next.js 15
+
+**Try it:**
+
+- Visit `/examples/revalidate-tag-cachelife` to see all three profiles
+- Click "Revalidate" buttons to test each profile
+- Compare the behavior of different cacheLife profiles
+- See code examples for Next.js 15 vs Next.js 16
+
+### 8. ISR with Static Params (`/examples/isr/blog/[id]`)
 
 Incremental Static Regeneration with `generateStaticParams`.
 
@@ -144,7 +163,7 @@ Incremental Static Regeneration with `generateStaticParams`.
 - Try different IDs like `/examples/isr/blog/2`, `/examples/isr/blog/3`
 - Check the rendered timestamp to see caching in action
 
-### 8. Static Params Test (`/examples/static-params/[testName]`)
+### 9. Static Params Test (`/examples/static-params/[testName]`)
 
 Tests static params generation with dynamic routes.
 
@@ -170,11 +189,14 @@ Unified endpoint for revalidating cache by tag or path.
 
 **Tag-based revalidation (GET):**
 
-- `GET /api/revalidate?tag=futurama` - Revalidates cache for the "futurama" tag
+- `GET /api/revalidate?tag=futurama` - Revalidates cache for the "futurama" tag with 'max' profile
+- `GET /api/revalidate?tag=futurama&cacheLife=hours` - Revalidates with 'hours' profile
+- `GET /api/revalidate?tag=futurama&cacheLife=days` - Revalidates with 'days' profile
 
 **Tag-based revalidation (POST):**
 
-- `POST /api/revalidate` with body `{ "tag": "futurama" }` - Revalidates cache for a tag
+- `POST /api/revalidate` with body `{ "tag": "futurama" }` - Revalidates cache for a tag (defaults to 'max')
+- `POST /api/revalidate` with body `{ "tag": "futurama", "cacheLife": "hours" }` - Revalidates with specific profile
 
 **Path-based revalidation (POST):**
 
@@ -183,13 +205,21 @@ Unified endpoint for revalidating cache by tag or path.
 **Examples:**
 
 ```bash
-# Revalidate by tag (GET)
+# Revalidate by tag (GET) - defaults to 'max' profile
 curl http://localhost:3000/api/revalidate?tag=futurama
 
-# Revalidate by tag (POST)
+# Revalidate by tag with specific profile (GET)
+curl http://localhost:3000/api/revalidate?tag=futurama&cacheLife=hours
+
+# Revalidate by tag (POST) - defaults to 'max' profile
 curl -X POST http://localhost:3000/api/revalidate \
   -H "Content-Type: application/json" \
   -d '{"tag": "futurama"}'
+
+# Revalidate by tag with specific profile (POST)
+curl -X POST http://localhost:3000/api/revalidate \
+  -H "Content-Type: application/json" \
+  -d '{"tag": "futurama", "cacheLife": "days"}'
 
 # Revalidate by path (POST)
 curl -X POST http://localhost:3000/api/revalidate \

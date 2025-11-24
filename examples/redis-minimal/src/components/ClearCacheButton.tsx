@@ -16,7 +16,7 @@ export function ClearCacheButton({
     setLoading(true);
     setMessage(null);
     try {
-      const response = await fetch(`/api/revalidate?tag=${tag}`);
+      const response = await fetch(`/api/revalidate?tag=${tag}&cacheLife=max`);
       const text = await response.text();
       setMessage(text);
       setTimeout(() => {

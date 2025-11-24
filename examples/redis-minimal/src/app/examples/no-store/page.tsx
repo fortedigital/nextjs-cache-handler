@@ -36,6 +36,9 @@ export default async function NoStoreExample() {
     <ExampleLayout
       title="No Store (Always Fresh) Example"
       description="This example demonstrates fetch with 'no-store' option, which always fetches fresh data and never caches the response. Perfect for real-time or user-specific data."
+      actions={
+        <RevalidatePathButton path="/examples/no-store" label="Refresh Page" />
+      }
     >
       <div className="space-y-6">
         <InfoCard title="How it works">

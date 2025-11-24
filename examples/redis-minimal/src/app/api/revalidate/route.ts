@@ -4,15 +4,22 @@ import { NextRequest } from "next/server";
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const tag = searchParams.get("tag");
+  const cacheLife = (searchParams.get("cacheLife") || "max") as
+    | "max"
+    | "hours"
+    | "days";
 
   if (tag) {
     try {
-      revalidateTag(tag, "max");
-      return new Response(`Cache cleared for tag: ${tag}`, {
-        status: 200,
-      });
-    } catch (error) {
-      return new Response(`Error clearing cache for tag: ${tag}`, {
+      revalidateTag(tag, cacheLife);
+      return new Response(
+        `Cache revalidated for tag: ${tag} with profile: ${cacheLife}`,
+        {
+          status: 200,
+        }
+      );
+    } catch {
+      return new Response(`Error revalidating cache for tag: ${tag}`, {
         status: 500,
       });
     }
@@ -29,10 +36,14 @@ export async function POST(request: NextRequest) {
     const { tag, path } = body;
 
     if (tag) {
-      revalidateTag(tag, "max");
-      return new Response(`Cache cleared for tag: ${tag}`, {
-        status: 200,
-      });
+      const cacheLife = (body.cacheLife || "max") as "max" | "hours" | "days";
+      revalidateTag(tag, cacheLife);
+      return new Response(
+        `Cache revalidated for tag: ${tag} with profile: ${cacheLife}`,
+        {
+          status: 200,
+        }
+      );
     }
 
     if (path) {
