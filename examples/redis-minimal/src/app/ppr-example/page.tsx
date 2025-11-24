@@ -18,6 +18,4 @@ export default function Page({
   );
 }
 
-export const experimental_ppr = true;
-
 export const revalidate = 3600;
