@@ -10,17 +10,21 @@ First, install dependencies:
 npm i
 ```
 
-Run the development server:
+### Important: Development vs Production Mode
 
-```bash
-npm run dev
-```
+**Next.js does not use the cache handler in development mode.** This is a Next.js limitation - caching is intentionally disabled in dev mode for faster hot reloading and to ensure developers always see fresh data.
 
-Or run the production server:
+To test caching functionality, you must use **production mode**:
 
 ```bash
 npm run build
 npm run start
+```
+
+For development (without caching):
+
+```bash
+npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
@@ -113,6 +117,8 @@ This example uses a custom Redis cache handler configured in `cache-handler.mjs`
 - Local LRU fallback
 - Composite caching strategy
 - Tag-based cache invalidation
+
+**Note:** The cache handler only works in production mode. In development mode, Next.js bypasses the cache handler entirely. You'll see a warning message in the console: `"Next.js does not use the cache in development mode. Use production mode to enable caching."`
 
 ## UI Features
 
