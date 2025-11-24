@@ -108,7 +108,26 @@ Demonstrates fetch caching with tags and time-based revalidation.
 - Click "Clear Cache" to invalidate the cache
 - Reload the page to see fresh data
 
-### 6. ISR with Static Params (`/examples/isr/blog/[id]`)
+### 6. unstable_cache (`/examples/unstable-cache`)
+
+Demonstrates persistent caching with `unstable_cache` for function results.
+
+**Features:**
+
+- Cache any function, not just fetch requests
+- Tags and revalidation support
+- Side-by-side comparison with fetch caching
+- Perfect for database queries and computations
+- Shows when to use unstable_cache vs fetch
+
+**Try it:**
+
+- Visit `/examples/unstable-cache` to see both caching methods
+- Compare the timestamps and behavior
+- Click "Clear Tag Cache" to invalidate both caches
+- Understand when to use unstable_cache vs fetch
+
+### 7. ISR with Static Params (`/examples/isr/blog/[id]`)
 
 Incremental Static Regeneration with `generateStaticParams`.
 
@@ -125,7 +144,7 @@ Incremental Static Regeneration with `generateStaticParams`.
 - Try different IDs like `/examples/isr/blog/2`, `/examples/isr/blog/3`
 - Check the rendered timestamp to see caching in action
 
-### 7. Static Params Test (`/examples/static-params/[testName]`)
+### 8. Static Params Test (`/examples/static-params/[testName]`)
 
 Tests static params generation with dynamic routes.
 

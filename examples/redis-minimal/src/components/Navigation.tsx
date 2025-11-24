@@ -27,6 +27,11 @@ const examples = [
     description: "Cache tags and revalidation",
   },
   {
+    href: "/examples/unstable-cache",
+    label: "unstable_cache",
+    description: "Persistent function caching",
+  },
+  {
     href: "/examples/isr/blog/1",
     label: "ISR",
     description: "Incremental Static Regeneration",

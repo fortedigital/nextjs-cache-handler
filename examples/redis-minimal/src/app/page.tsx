@@ -47,6 +47,18 @@ const examples = [
     ],
   },
   {
+    href: "/examples/unstable-cache",
+    title: "unstable_cache",
+    description:
+      "Demonstrates persistent caching with unstable_cache. Cache function results across requests with tags and revalidation. Compare with fetch caching.",
+    features: [
+      "Cache any function, not just fetch",
+      "Tags and revalidation support",
+      "Side-by-side comparison with fetch",
+      "Perfect for database queries and computations",
+    ],
+  },
+  {
     href: "/examples/isr/blog/1",
     title: "ISR with Static Params",
     description:
