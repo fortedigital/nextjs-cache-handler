@@ -3,6 +3,39 @@ import { ExampleLayout } from "@/components/ExampleLayout";
 
 const examples = [
   {
+    href: "/examples/default-cache",
+    title: "Default Cache (force-cache)",
+    description:
+      "Demonstrates the default fetch caching behavior. Next.js uses 'force-cache' by default, which caches data indefinitely until manually invalidated.",
+    features: [
+      "Default caching behavior",
+      "Indefinite cache duration",
+      "Perfect for static data",
+    ],
+  },
+  {
+    href: "/examples/no-store",
+    title: "No Store (Always Fresh)",
+    description:
+      "Shows fetch with 'no-store' option, which always fetches fresh data and never caches the response. Perfect for real-time or user-specific data.",
+    features: [
+      "Never caches responses",
+      "Always fetches fresh data",
+      "Real-time data updates",
+    ],
+  },
+  {
+    href: "/examples/time-based-revalidation",
+    title: "Time-based Revalidation",
+    description:
+      "Shows fetch with time-based revalidation. Data is cached and automatically revalidated after a specified time period, balancing freshness with performance.",
+    features: [
+      "Automatic revalidation",
+      "Configurable time period (30 seconds)",
+      "Balances freshness and performance",
+    ],
+  },
+  {
     href: "/examples/fetch-tags",
     title: "Fetch with Tags",
     description:

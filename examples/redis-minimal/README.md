@@ -41,7 +41,56 @@ The application includes several examples demonstrating different Next.js cachin
 
 Overview page listing all available examples with descriptions and features.
 
-### 2. Fetch with Tags (`/examples/fetch-tags`)
+### 2. Default Cache (`/examples/default-cache`)
+
+Demonstrates the default fetch caching behavior with `force-cache`.
+
+**Features:**
+
+- Default caching behavior (indefinite cache duration)
+- Perfect for static or rarely-changing data
+- Shows how Next.js caches by default
+
+**Try it:**
+
+- Visit `/examples/default-cache` to see cached data
+- The timestamp will remain the same on subsequent requests
+- Data is cached until manually cleared or build is redeployed
+
+### 3. No Store (`/examples/no-store`)
+
+Shows fetch with `no-store` option, which always fetches fresh data.
+
+**Features:**
+
+- Never caches responses
+- Always fetches fresh data from API
+- Perfect for real-time or user-specific data
+- Timestamp changes on every request
+
+**Try it:**
+
+- Visit `/examples/no-store` to see fresh data on every load
+- Refresh the page multiple times - timestamp changes each time
+- Compare with other caching strategies
+
+### 4. Time-based Revalidation (`/examples/time-based-revalidation`)
+
+Shows fetch with time-based revalidation (standalone, without tags).
+
+**Features:**
+
+- Automatic revalidation after specified time (30 seconds)
+- Balances freshness with performance
+- Standalone example of `next.revalidate`
+
+**Try it:**
+
+- Visit `/examples/time-based-revalidation` to see cached data
+- Refresh within 30 seconds - timestamp stays the same
+- Wait 30+ seconds and refresh - timestamp updates
+
+### 5. Fetch with Tags (`/examples/fetch-tags`)
 
 Demonstrates fetch caching with tags and time-based revalidation.
 
@@ -59,7 +108,7 @@ Demonstrates fetch caching with tags and time-based revalidation.
 - Click "Clear Cache" to invalidate the cache
 - Reload the page to see fresh data
 
-### 3. ISR with Static Params (`/examples/isr/blog/[id]`)
+### 6. ISR with Static Params (`/examples/isr/blog/[id]`)
 
 Incremental Static Regeneration with `generateStaticParams`.
 
@@ -76,7 +125,7 @@ Incremental Static Regeneration with `generateStaticParams`.
 - Try different IDs like `/examples/isr/blog/2`, `/examples/isr/blog/3`
 - Check the rendered timestamp to see caching in action
 
-### 5. Static Params Test (`/examples/static-params/[testName]`)
+### 7. Static Params Test (`/examples/static-params/[testName]`)
 
 Tests static params generation with dynamic routes.
 
@@ -94,19 +143,39 @@ Tests static params generation with dynamic routes.
 
 ## API Routes
 
-### Clear Cache (`/api/cache`)
+### Cache Revalidation (`/api/revalidate`)
 
-Clears cache for a specific tag.
+Unified endpoint for revalidating cache by tag or path.
 
 **Usage:**
 
-- `GET /api/cache?tag=futurama` - Clears cache for the "futurama" tag
-- Default tag is "futurama" if not specified
+**Tag-based revalidation (GET):**
 
-**Example:**
+- `GET /api/revalidate?tag=futurama` - Revalidates cache for the "futurama" tag
+
+**Tag-based revalidation (POST):**
+
+- `POST /api/revalidate` with body `{ "tag": "futurama" }` - Revalidates cache for a tag
+
+**Path-based revalidation (POST):**
+
+- `POST /api/revalidate` with body `{ "path": "/examples/default-cache" }` - Revalidates cache for a specific path
+
+**Examples:**
 
 ```bash
-curl http://localhost:3000/api/cache?tag=futurama
+# Revalidate by tag (GET)
+curl http://localhost:3000/api/revalidate?tag=futurama
+
+# Revalidate by tag (POST)
+curl -X POST http://localhost:3000/api/revalidate \
+  -H "Content-Type: application/json" \
+  -d '{"tag": "futurama"}'
+
+# Revalidate by path (POST)
+curl -X POST http://localhost:3000/api/revalidate \
+  -H "Content-Type: application/json" \
+  -d '{"path": "/examples/default-cache"}'
 ```
 
 ## Cache Handler

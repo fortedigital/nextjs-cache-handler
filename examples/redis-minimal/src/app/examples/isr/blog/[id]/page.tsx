@@ -1,6 +1,7 @@
 import { ExampleLayout } from "@/components/ExampleLayout";
 import { InfoCard } from "@/components/InfoCard";
 import { CodeBlock } from "@/components/CodeBlock";
+import { RevalidatePathButton } from "@/components/RevalidatePathButton";
 
 interface Post {
   id: string;
@@ -37,7 +38,7 @@ export default async function Page({
     post = await fetch(`https://api.vercel.app/blog/${id}`).then((res) =>
       res.json()
     );
-  } catch (error) {
+  } catch {
     return (
       <ExampleLayout
         title="ISR with Static Params Example"
@@ -55,6 +56,7 @@ export default async function Page({
     <ExampleLayout
       title="ISR with Static Params Example"
       description="This example demonstrates Incremental Static Regeneration with generateStaticParams. Pages are statically generated at build time and regenerated on demand."
+      actions={<RevalidatePathButton path={`/examples/isr/blog/${id}`} />}
     >
       <div className="space-y-6">
         <InfoCard title="How it works">
@@ -79,6 +81,10 @@ export default async function Page({
             <li>
               Try visiting different blog IDs (1, 2, 3, etc.) to see different
               posts
+            </li>
+            <li>
+              Click &quot;Refresh Cache&quot; to manually revalidate this page
+              before the 1-hour period expires
             </li>
           </ul>
         </InfoCard>
@@ -140,7 +146,7 @@ export default async function Page({
             Code Example
           </h2>
           <CodeBlock>
-{`export async function generateStaticParams() {
+            {`export async function generateStaticParams() {
   const posts = await fetch("https://api.vercel.app/blog")
     .then((res) => res.json());
   return posts.map((post) => ({
@@ -162,4 +168,3 @@ export default async function Page({ params }) {
     </ExampleLayout>
   );
 }
-

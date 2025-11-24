@@ -6,19 +6,34 @@ import { usePathname } from "next/navigation";
 const examples = [
   { href: "/", label: "Home", description: "Overview of all examples" },
   {
+    href: "/examples/default-cache",
+    label: "Default Cache",
+    description: "Default force-cache behavior",
+  },
+  {
+    href: "/examples/no-store",
+    label: "No Store",
+    description: "Always fetch fresh data",
+  },
+  {
+    href: "/examples/time-based-revalidation",
+    label: "Time Revalidation",
+    description: "Time-based revalidation",
+  },
+  {
     href: "/examples/fetch-tags",
     label: "Fetch with Tags",
-    description: "Demonstrates fetch caching with tags and revalidation",
+    description: "Cache tags and revalidation",
   },
   {
     href: "/examples/isr/blog/1",
-    label: "ISR with Static Params",
-    description: "Incremental Static Regeneration example",
+    label: "ISR",
+    description: "Incremental Static Regeneration",
   },
   {
     href: "/examples/static-params/cache",
-    label: "Static Params Test",
-    description: "Testing static params generation",
+    label: "Static Params",
+    description: "Static params generation",
   },
 ];
 
