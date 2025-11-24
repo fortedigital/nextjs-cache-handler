@@ -20,14 +20,55 @@ The documentation at [@neshca/cache-handler - caching-tools.github.io/next-share
 
 If upgrading from Next 14 or earlier, **flush your Redis cache** before running new version of the application locally and on your hosted environments. **Cache formats between Next 14 and 15 are incompatible**.
 
-## Next 15 Support
+## Next.js Compatibility
 
 The original `@neshca/cache-handler` package does not support Next.js 15.
 
 Prior to 2.0.0, this package provided wrappers and enhancements to allow using `@neshca/cache-handler` with Next.js 15.  
 From version 2.0.0 onward, `@fortedigital/nextjs-cache-handler` is a standalone solution with no dependency on `@neshca/cache-handler` and is fully compatible with Next.js 15 and [redis 5](https://www.npmjs.com/package/redis).
 
+**Version Requirements:**
+
+- **Next.js 15**: Version 2.0.0+ (version 3.0.0+ recommended for latest improvements and maintenance development)
+- **Next.js 16**: Version 3.0.0+ required
+
 We aim to keep up with new Next.js releases and will introduce major changes with appropriate version bumps.
+
+### Feature Compatibility Matrix
+
+| Feature                                              | Next.js 15 | Next.js 16 | Notes                                                |
+| ---------------------------------------------------- | ---------- | ---------- | ---------------------------------------------------- |
+| **Fetch API Caching**                                |
+| `fetch` with default cache (`force-cache`)           | ✅         | ✅         | Default behavior, caches indefinitely                |
+| `fetch` with `no-store`                              | ✅         | ✅         | Never caches, always fresh                           |
+| `fetch` with `no-cache`                              | ✅         | ✅         | Validates cache on each request                      |
+| `fetch` with `next.revalidate`                       | ✅         | ✅         | Time-based revalidation                              |
+| `fetch` with `next.tags`                             | ✅         | ✅         | Tag-based cache invalidation                         |
+| **Cache Invalidation**                               |
+| `revalidateTag(tag)`                                 | ✅         | N/A        | Breaking change in Next.js 16                        |
+| `revalidateTag(tag, cacheLife)`                      | N/A        | ✅         | New required API in Next.js 16                       |
+| `updateTag(tag)`                                     | N/A        | ✅         | New API for immediate invalidation in Server Actions |
+| `revalidatePath(path)`                               | ✅         | ✅         | Path-based revalidation                              |
+| `revalidatePath(path, type)`                         | ✅         | ✅         | Type-specific path revalidation                      |
+| **Function Caching**                                 |
+| `unstable_cache()`                                   | ✅         | ✅         | Cache any function with tags and revalidation        |
+| **Static Generation**                                |
+| `generateStaticParams()`                             | ✅         | ✅         | Static params generation                             |
+| ISR (Incremental Static Regeneration)                | ✅         | ✅         | On-demand regeneration                               |
+| Route segment config (`revalidate`, `dynamic`, etc.) | ✅         | ✅         | All segment config options                           |
+| **Next.js 16 New Features**                          |
+| `cacheHandlers` config (for `'use cache'`)           | ❌         | ❌         | Not yet supported - Planned for Next 16              |
+| `'use cache'` directive                              | ❌         | ❌         | Not yet supported - Planned for Next 16              |
+| `'use cache: remote'` directive                      | ❌         | ❌         | Not yet supported - Planned for Next 16              |
+| `'use cache: private'` directive                     | ❌         | ❌         | Not yet supported - Planned for Next 16              |
+| `cacheComponents`                                    | ❌         | ❌         | Not yet supported - Planned for Next 16              |
+
+**Notes:**
+
+- `revalidateTag()` in Next.js 16 requires a `cacheLife` parameter (`'max'`, `'hours'`, or `'days'`). This is a breaking change from Next.js 15.
+- `cacheLife` profiles are primarily designed for Vercel's infrastructure. Custom cache handlers may not fully differentiate between different `cacheLife` profiles.
+- `updateTag()` is only available in Server Actions, not Route Handlers.
+- The new `cacheHandlers` API and `'use cache'` directives are not yet supported by this package.
 
 ### Swapping from `@neshca/cache-handler`
 
@@ -479,7 +520,6 @@ For context or historical documentation, you may still reference the [original p
 
 `neshClassicCache` allows you to cache the results of expensive operations, like database queries, and reuse them across multiple requests. Unlike the [`neshCache`](/functions/nesh-cache) or [`unstable_cache` ↗](https://nextjs.org/docs/app/api-reference/functions/unstable_cache) function, `neshClassicCache` must be used in a Next.js Pages Router allowing users to cache data in the `getServerSideProps` and API routes.
 
-
 > [!NOTE]
 >
 > Cache entries created with `neshClassicCache` can be revalidated only by the [`revalidateTag` ↗](https://nextjs.org/docs/app/api-reference/functions/revalidateTag) method.
@@ -513,11 +553,11 @@ This is an object that controls how the cache behaves. It can contain the follow
 ### Example
 
 ```jsx filename="src/pages/api/api-example.js" copy
-import { neshClassicCache } from '@fortedigital/nextjs-cache-handler/functions';
-import axios from 'axios';
+import { neshClassicCache } from "@fortedigital/nextjs-cache-handler/functions";
+import axios from "axios";
 
 export const config = {
-  runtime: 'nodejs',
+  runtime: "nodejs",
 };
 
 async function getViaAxios(url) {
@@ -531,22 +571,22 @@ async function getViaAxios(url) {
 const cachedAxios = neshClassicCache(getViaAxios);
 
 export default async function handler(request, response) {
-  if (request.method !== 'GET') {
+  if (request.method !== "GET") {
     return response.status(405).send(null);
   }
 
   const revalidate = 5;
 
-  const url = new URL('https://api.example.com/data.json');
+  const url = new URL("https://api.example.com/data.json");
 
   // Add tags to be able to revalidate the cache
   const data = await cachedAxios(
     { revalidate, tags: [url.pathname], responseContext: response },
-    url,
+    url
   );
 
   if (!data) {
-    response.status(404).send('Not found');
+    response.status(404).send("Not found");
 
     return;
   }
