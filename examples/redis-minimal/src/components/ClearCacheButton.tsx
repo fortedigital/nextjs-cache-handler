@@ -22,7 +22,7 @@ export function ClearCacheButton({
       setTimeout(() => {
         window.location.reload();
       }, 500);
-    } catch (error) {
+    } catch {
       setMessage("Error clearing cache");
     } finally {
       setLoading(false);

@@ -37,6 +37,11 @@ const examples = [
     description: "Next.js 16 cacheLife profiles",
   },
   {
+    href: "/examples/update-tag",
+    label: "updateTag",
+    description: "Immediate cache invalidation in Server Actions",
+  },
+  {
     href: "/examples/isr/blog/1",
     label: "ISR",
     description: "Incremental Static Regeneration",

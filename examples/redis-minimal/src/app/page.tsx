@@ -71,6 +71,18 @@ const examples = [
     ],
   },
   {
+    href: "/examples/update-tag",
+    title: "updateTag() API (Next.js 16)",
+    description:
+      "Demonstrates the new updateTag() API for immediate cache invalidation in Server Actions, providing read-your-writes semantics and instant cache updates after mutations.",
+    features: [
+      "Immediate cache invalidation",
+      "Read-your-writes semantics",
+      "Form submission examples",
+      "Comparison with revalidateTag()",
+    ],
+  },
+  {
     href: "/examples/isr/blog/1",
     title: "ISR with Static Params",
     description:

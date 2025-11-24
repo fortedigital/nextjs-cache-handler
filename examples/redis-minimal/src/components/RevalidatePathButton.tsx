@@ -28,7 +28,7 @@ export function RevalidatePathButton({
       setTimeout(() => {
         window.location.reload();
       }, 500);
-    } catch (error) {
+    } catch {
       setMessage("Error revalidating cache");
     } finally {
       setLoading(false);
