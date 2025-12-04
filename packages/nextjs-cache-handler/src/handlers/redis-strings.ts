@@ -228,8 +228,13 @@ export default function createHandler({
       let expireOperation: Promise<number> | undefined;
       const lifespan = cacheHandlerValue.lifespan;
 
-      if (cacheHandlerValue?.value) {
-        parseBuffersToStrings(cacheHandlerValue);
+      // Clone only the value object to avoid mutating Next.js's original
+      const valueForStorage = cacheHandlerValue.value
+        ? { ...cacheHandlerValue.value }
+        : null;
+
+      if (valueForStorage) {
+        parseBuffersToStrings({ ...cacheHandlerValue, value: valueForStorage });
       }
 
       const setTagsOperation = client
@@ -248,13 +253,18 @@ export default function createHandler({
 
       await Promise.all([setTagsOperation, setSharedTtlOperation]);
 
+      const serializedValue = JSON.stringify({
+        ...cacheHandlerValue,
+        value: valueForStorage,
+      });
+
       switch (keyExpirationStrategy) {
         case "EXAT": {
           setOperation = client
             .withAbortSignal(AbortSignal.timeout(timeoutMs))
             .set(
               keyPrefix + key,
-              JSON.stringify(cacheHandlerValue),
+              serializedValue,
               typeof lifespan?.expireAt === "number"
                 ? {
                     EXAT: lifespan.expireAt,
@@ -266,7 +276,7 @@ export default function createHandler({
         case "EXPIREAT": {
           setOperation = client
             .withAbortSignal(AbortSignal.timeout(timeoutMs))
-            .set(keyPrefix + key, JSON.stringify(cacheHandlerValue));
+            .set(keyPrefix + key, serializedValue);
 
           expireOperation = lifespan
             ? client
