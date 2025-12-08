@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 
-export function RevalidatePathButton({
-  path,
-  label = "Refresh Cache",
+export function RevalidateTagButton({
+  tag,
+  cacheLife = "max",
+  label = "Revalidate",
 }: {
-  path: string;
+  tag: string;
+  cacheLife?: "max" | "hours" | "days";
   label?: string;
 }) {
   const [loading, setLoading] = useState(false);
@@ -21,7 +23,7 @@ export function RevalidatePathButton({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ path }),
+        body: JSON.stringify({ tag, cacheLife }),
       });
       const text = await response.text();
       setMessage(text);
@@ -36,16 +38,16 @@ export function RevalidatePathButton({
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-col items-end gap-1">
       <button
         onClick={handleRevalidate}
         disabled={loading}
-        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md font-medium transition-colors"
+        className="px-3 py-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-md transition-colors"
       >
-        {loading ? "Refreshing..." : label}
+        {loading ? "Revalidating..." : label}
       </button>
       {message && (
-        <span className="text-sm text-gray-600 dark:text-gray-400">
+        <span className="text-xs text-gray-600 dark:text-gray-400">
           {message}
         </span>
       )}
