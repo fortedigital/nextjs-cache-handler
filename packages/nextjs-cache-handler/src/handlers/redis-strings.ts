@@ -221,7 +221,7 @@ export default function createHandler({
 
       return cacheValue;
     },
-    async set(key, cacheHandlerValue) {
+    async set(key, cacheHandlerValue, ctx) {
       assertClientIsReady();
 
       let setOperation: Promise<string | null>;
@@ -260,23 +260,27 @@ export default function createHandler({
 
       switch (keyExpirationStrategy) {
         case "EXAT": {
+          const setOptions =
+            typeof lifespan?.expireAt === "number"
+              ? {
+                  EXAT: lifespan.expireAt,
+                  ...(ctx?.isInitialHydration ? { NX: true } : {}),
+                }
+              : ctx?.isInitialHydration
+                ? { NX: true }
+                : undefined;
+
           setOperation = client
             .withAbortSignal(AbortSignal.timeout(timeoutMs))
-            .set(
-              keyPrefix + key,
-              serializedValue,
-              typeof lifespan?.expireAt === "number"
-                ? {
-                    EXAT: lifespan.expireAt,
-                  }
-                : undefined,
-            );
+            .set(keyPrefix + key, serializedValue, setOptions);
           break;
         }
         case "EXPIREAT": {
+          const setOptions = ctx?.isInitialHydration ? { NX: true } : undefined;
+
           setOperation = client
             .withAbortSignal(AbortSignal.timeout(timeoutMs))
-            .set(keyPrefix + key, serializedValue);
+            .set(keyPrefix + key, serializedValue, setOptions);
 
           expireOperation = lifespan
             ? client

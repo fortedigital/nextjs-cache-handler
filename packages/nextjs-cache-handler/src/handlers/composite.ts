@@ -37,10 +37,10 @@ export default function createHandler({
       return null;
     },
 
-    async set(key, data) {
+    async set(key, data, ctx) {
       const index = strategy?.(data) ?? 0;
       const handler = handlers[index] ?? handlers[0]!;
-      await handler.set(key, data);
+      await handler.set(key, data, ctx);
     },
 
     async revalidateTag(tag) {

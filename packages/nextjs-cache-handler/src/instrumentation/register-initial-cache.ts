@@ -236,6 +236,7 @@ export async function registerInitialCache(
         revalidate,
         internal_lastModified: lastModified,
         tags: getTagsFromHeaders(meta.headers),
+        isInitialHydration: true,
       });
     } catch (error) {
       if (debug) {
@@ -376,6 +377,7 @@ export async function registerInitialCache(
       await cacheHandler.set(cachePath, value, {
         revalidate,
         internal_lastModified: lastModified,
+        isInitialHydration: true,
       });
 
       if (debug) {
@@ -490,6 +492,7 @@ export async function registerInitialCache(
         revalidate,
         internal_lastModified: lastModified,
         tags: fetchCache.tags,
+        isInitialHydration: true,
       });
     } catch (error) {
       if (debug) {
