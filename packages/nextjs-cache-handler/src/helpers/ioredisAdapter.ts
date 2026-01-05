@@ -66,6 +66,7 @@ export function ioredisAdapter(client: Redis): RedisClientType {
         return async (key: string, value: string, options?: any) => {
           const args: (string | number)[] = [key, value];
           if (options) {
+            // Expiration options (mutually exclusive)
             if (options.EXAT) {
               args.push("EXAT", options.EXAT);
             } else if (options.PXAT) {
@@ -77,7 +78,18 @@ export function ioredisAdapter(client: Redis): RedisClientType {
             } else if (options.KEEPTTL) {
               args.push("KEEPTTL");
             }
-            // Add other options if necessary
+
+            // Condition options (mutually exclusive with each other, but can be combined with expiration)
+            if (options.NX) {
+              args.push("NX");
+            } else if (options.XX) {
+              args.push("XX");
+            }
+
+            // GET option (can be combined with others)
+            if (options.GET) {
+              args.push("GET");
+            }
           }
           // Cast to a generic signature to avoid overload mismatch issues with dynamic args
           const setFn = target.set as unknown as (
@@ -104,31 +116,20 @@ export function ioredisAdapter(client: Redis): RedisClientType {
         };
       }
 
-      // Handle camelCase to lowercase mapping for other methods
-      if (typeof prop === "string") {
-        // Special case for expireAt -> expireat
-        if (prop === "expireAt") {
-          return target.expireat.bind(target);
-        }
+      if (prop === "get") {
+        return target.get.bind(target);
+      }
 
-        // hSet -> hset
-        if (prop === "hSet") {
-          return target.hset.bind(target);
-        }
+      if (prop === "expireAt") {
+        return target.expireat.bind(target);
+      }
 
-        // hExists -> hexists
-        if (prop === "hExists") {
-          return target.hexists.bind(target);
-        }
+      if (prop === "hSet") {
+        return target.hset.bind(target);
+      }
 
-        // Default fallback to lowercase if exists
-        const lowerProp = prop.toLowerCase();
-        if (
-          lowerProp in target &&
-          typeof (target as any)[lowerProp] === "function"
-        ) {
-          return (target as any)[lowerProp].bind(target);
-        }
+      if (prop === "hExists") {
+        return target.hexists.bind(target);
       }
 
       return Reflect.get(target, prop, receiver);
