@@ -132,6 +132,16 @@ export function ioredisAdapter(client: Redis): RedisClientType {
         return target.hexists.bind(target);
       }
 
+      if (prop === "on") {
+        return target.on.bind(target);
+      }
+
+      if (prop === "destroy") {
+        return async () => {
+          await target.quit();
+        };
+      }
+
       return Reflect.get(target, prop, receiver);
     },
   }) as unknown as RedisClientType;

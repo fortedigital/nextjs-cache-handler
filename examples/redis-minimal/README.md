@@ -21,6 +21,15 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 Modify `.env` file if you need to.
 
+### Redis Client Configuration
+
+The example supports both Redis clients:
+
+- **@redis/client** (default): Set `REDIS_TYPE="redis"` or leave unset
+- **ioredis**: Set `REDIS_TYPE="ioredis"`
+
+This allows you to test the `ioredisAdapter` functionality.
+
 ## Examples
 
 - http://localhost:3000
