@@ -260,15 +260,16 @@ export default function createHandler({
 
       switch (keyExpirationStrategy) {
         case "EXAT": {
+          const hasExpireAt = typeof lifespan?.expireAt === "number";
+          const isNX = ctx?.setOnlyIfNotExists === true;
+
           const setOptions =
-            typeof lifespan?.expireAt === "number"
+            hasExpireAt || isNX
               ? {
-                  EXAT: lifespan.expireAt,
-                  ...(ctx?.isInitialHydration ? { NX: true } : {}),
+                  ...(hasExpireAt && { EXAT: lifespan.expireAt }),
+                  ...(isNX && { NX: true }),
                 }
-              : ctx?.isInitialHydration
-                ? { NX: true }
-                : undefined;
+              : undefined;
 
           setOperation = client
             .withAbortSignal(AbortSignal.timeout(timeoutMs))
@@ -276,7 +277,7 @@ export default function createHandler({
           break;
         }
         case "EXPIREAT": {
-          const setOptions = ctx?.isInitialHydration ? { NX: true } : undefined;
+          const setOptions = ctx?.setOnlyIfNotExists ? { NX: true } : undefined;
 
           setOperation = client
             .withAbortSignal(AbortSignal.timeout(timeoutMs))

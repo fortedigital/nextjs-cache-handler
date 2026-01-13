@@ -50,14 +50,15 @@ export type CacheHandlerParametersGetWithTags = [
  * Context information provided during cache set operations.
  */
 export type SetContext = {
+
   /**
-   * Indicates whether this set operation is part of initial cache hydration.
-   * When true, cache handlers should use non-destructive write operations (e.g., Redis NX)
-   * to avoid overwriting fresher runtime-generated cache entries with stale build-time values.
-   * 
+   * When true, the cache write should only occur if the key does not already exist.
+   * Cache handlers should use non-destructive write operations (e.g., Redis NX)
+   * to avoid overwriting existing or fresher cache entries.
+   *
    * @default false
    */
-  isInitialHydration?: boolean;
+  setOnlyIfNotExists?: boolean;
 };
 
 /**

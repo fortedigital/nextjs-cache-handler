@@ -100,8 +100,11 @@ export default function createHandler({
       return Promise.resolve(cacheValue);
     },
     set(key, cacheHandlerValue, ctx) {
-      // LRU cache is in-memory and ephemeral, so NX behavior is not applicable
-      // We always set the value regardless of isInitialHydration flag
+      // LRU cache is in-memory and ephemeral, but we can still honor "setOnlyIfNotExists"
+      // by checking whether the key is already present before writing.
+      if (ctx?.setOnlyIfNotExists && lruCacheStore.has(key)) {
+        return Promise.resolve();
+      }
       lruCacheStore.set(key, cacheHandlerValue);
 
       return Promise.resolve();

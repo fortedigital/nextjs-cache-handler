@@ -775,7 +775,7 @@ export class CacheHandler implements NextCacheHandler {
     };
 
     await CacheHandler.#mergedHandler.set(cacheKey, cacheHandlerValue, {
-      isInitialHydration: ctx?.isInitialHydration,
+      setOnlyIfNotExists: ctx?.setOnlyIfNotExists,
     });
 
     if (
