@@ -58,6 +58,16 @@ export type RegisterInitialCacheOptions = {
    */
   buildDir?: string;
   /**
+   * When true, cache writes performed during the initial cache population
+   * will only occur if the key does not already exist.
+   *
+   * This allows you to choose a strategy: either always overwrite entries,
+   * or preserve any values that may have been written at runtime.
+   *
+   * @default false
+   */
+  setOnlyIfNotExists?: boolean;
+  /**
    * The maximum number of concurrent operations.
    * This speeds up the initial cache population because routes are read and processed in parallel.
    * The default value is either `os.availableParallelism()` (i.e., in most cases the number of CPU cores) or,
@@ -121,6 +131,7 @@ export async function registerInitialCache(
   const populateFetch = options.fetch ?? true;
   const populatePages = options.pages ?? true;
   const populateRoutes = options.routes ?? true;
+  const setOnlyIfNotExists = options.setOnlyIfNotExists ?? false;
 
   let prerenderManifest: PrerenderManifest | undefined;
 
@@ -236,6 +247,7 @@ export async function registerInitialCache(
         revalidate,
         internal_lastModified: lastModified,
         tags: getTagsFromHeaders(meta.headers),
+        setOnlyIfNotExists: setOnlyIfNotExists,
       });
     } catch (error) {
       if (debug) {
@@ -376,6 +388,7 @@ export async function registerInitialCache(
       await cacheHandler.set(cachePath, value, {
         revalidate,
         internal_lastModified: lastModified,
+        setOnlyIfNotExists: setOnlyIfNotExists,
       });
 
       if (debug) {
@@ -490,6 +503,7 @@ export async function registerInitialCache(
         revalidate,
         internal_lastModified: lastModified,
         tags: fetchCache.tags,
+        setOnlyIfNotExists: setOnlyIfNotExists,
       });
     } catch (error) {
       if (debug) {

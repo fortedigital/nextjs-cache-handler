@@ -13,6 +13,7 @@ import {
   Handler,
   OnCreationHook,
   Revalidate,
+  SetContext,
 } from "./cache-handler.types";
 import { PrerenderManifest } from "next/dist/build";
 import {
@@ -579,10 +580,10 @@ export class CacheHandler implements NextCacheHandler {
 
         return null;
       },
-      async set(key, cacheHandlerValue) {
+      async set(key, cacheHandlerValue, ctx) {
         const operationsResults = await Promise.allSettled(
           handlersList.map((handler) =>
-            handler.set(key, { ...cacheHandlerValue }),
+            handler.set(key, { ...cacheHandlerValue }, ctx),
           ),
         );
 
@@ -721,7 +722,7 @@ export class CacheHandler implements NextCacheHandler {
       internal_lastModified?: number;
       tags?: string[];
       revalidate?: Revalidate;
-    },
+    } & SetContext,
   ): Promise<void> {
     await CacheHandler.#ensureConfigured();
 
@@ -773,7 +774,9 @@ export class CacheHandler implements NextCacheHandler {
       value: value,
     };
 
-    await CacheHandler.#mergedHandler.set(cacheKey, cacheHandlerValue);
+    await CacheHandler.#mergedHandler.set(cacheKey, cacheHandlerValue, {
+      setOnlyIfNotExists: ctx?.setOnlyIfNotExists,
+    });
 
     if (
       process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD &&

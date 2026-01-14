@@ -99,6 +99,29 @@ export async function register() {
 }
 ```
 
+## Instrumentation
+
+### Initial cache registration
+
+By default, `registerInitialCache` populates the cache by overwriting any existing
+entries with values generated from build-time artifacts (fetch calls, pages, routes).
+
+#### Initial cache write strategy
+
+If you want to preserve values that may already exist in the cache (for example,
+entries written at runtime by another instance), you can enable the
+`setOnlyIfNotExists` option:
+
+```ts
+await registerInitialCache(CacheHandler, {
+  setOnlyIfNotExists: true,
+});
+```
+
+When enabled, cache writes performed during the initial cache registration will only
+occur if the corresponding cache key does not already exist. This allows you to
+explicitly choose the cache population strategy instead of enforcing a single default.
+
 ## Handlers
 
 ### `redis-strings`
