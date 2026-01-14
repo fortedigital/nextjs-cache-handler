@@ -4,10 +4,9 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directories:
-      - "/packages/nextjs-cache-handler"
       - "/examples/redis-minimal"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-minor"]
