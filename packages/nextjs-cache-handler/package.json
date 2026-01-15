@@ -84,6 +84,9 @@
       ],
       "helpers/withAbortSignalProxy": [
         "dist/helpers/withAbortSignalProxy.d.ts"
+      ],
+      "helpers/ioredisAdapter": [
+        "dist/helpers/ioredisAdapter.d.ts"
       ]
     }
   },

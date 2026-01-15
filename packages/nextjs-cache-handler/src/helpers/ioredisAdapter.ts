@@ -64,33 +64,37 @@ export function ioredisAdapter(client: Redis): RedisClientType {
 
       if (prop === "set") {
         return async (key: string, value: string, options?: any) => {
-          const args: (string | number)[] = [key, value];
-          if (options) {
-            // Expiration options (mutually exclusive)
-            if (options.EXAT) {
-              args.push("EXAT", options.EXAT);
-            } else if (options.PXAT) {
-              args.push("PXAT", options.PXAT);
-            } else if (options.EX) {
-              args.push("EX", options.EX);
-            } else if (options.PX) {
-              args.push("PX", options.PX);
-            } else if (options.KEEPTTL) {
-              args.push("KEEPTTL");
-            }
-
-            // Condition options (mutually exclusive with each other, but can be combined with expiration)
-            if (options.NX) {
-              args.push("NX");
-            } else if (options.XX) {
-              args.push("XX");
-            }
-
-            // GET option (can be combined with others)
-            if (options.GET) {
-              args.push("GET");
-            }
+          if (!options) {
+            return target.set(key, value);
           }
+
+          const extraArgs: (string | number)[] = [];
+
+          // Expiration options (mutually exclusive)
+          if (options.EXAT) {
+            extraArgs.push("EXAT", options.EXAT);
+          } else if (options.PXAT) {
+            extraArgs.push("PXAT", options.PXAT);
+          } else if (options.EX) {
+            extraArgs.push("EX", options.EX);
+          } else if (options.PX) {
+            extraArgs.push("PX", options.PX);
+          } else if (options.KEEPTTL) {
+            extraArgs.push("KEEPTTL");
+          }
+
+          // Condition options (mutually exclusive with each other, but can be combined with expiration)
+          if (options.NX) {
+            extraArgs.push("NX");
+          } else if (options.XX) {
+            extraArgs.push("XX");
+          }
+
+          // GET option (can be combined with others)
+          if (options.GET) {
+            extraArgs.push("GET");
+          }
+
           // Cast to a generic signature to avoid overload mismatch issues with dynamic args
           const setFn = target.set as unknown as (
             key: string,
@@ -98,11 +102,7 @@ export function ioredisAdapter(client: Redis): RedisClientType {
             ...args: (string | number)[]
           ) => Promise<string | null>;
 
-          return setFn(
-            args[0] as string,
-            args[1] as string | number,
-            ...args.slice(2),
-          );
+          return setFn(key, value, ...extraArgs);
         };
       }
 
