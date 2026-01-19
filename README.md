@@ -83,9 +83,8 @@ export default CacheHandler;
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    const { registerInitialCache } = await import(
-      "@neshca/cache-handler/instrumentation"
-    );
+    const { registerInitialCache } =
+      await import("@neshca/cache-handler/instrumentation");
     const CacheHandler = (await import("../cache-handler.mjs")).default;
     await registerInitialCache(CacheHandler);
   }
@@ -99,9 +98,8 @@ export async function register() {
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    const { registerInitialCache } = await import(
-      "@fortedigital/nextjs-cache-handler/instrumentation"
-    );
+    const { registerInitialCache } =
+      await import("@fortedigital/nextjs-cache-handler/instrumentation");
     const CacheHandler = (await import("../cache-handler.mjs")).default;
     await registerInitialCache(CacheHandler);
   }
@@ -198,7 +196,7 @@ We aim to keep up with new Next.js releases and will introduce major changes wit
 | Route segment config (`revalidate`, `dynamic`, etc.) | ✅         | ✅         | All segment config options                           |
 | **Redis Client Support**                             |
 | `redis` package (node-redis)                         | ✅         | ✅         | Official Redis client - fully supported              |
-| `ioredis` package                                    | ❌         | ❌         | Not yet supported - use `redis` package instead      |
+| `ioredis` package                                    | ✅         | ✅         | IORedis client - fully supported                     |
 | **Next.js 16 New Features**                          |
 | `cacheHandlers` config (for `'use cache'`)           | ❌         | ❌         | Not yet supported - Planned for Next 16              |
 | `'use cache'` directive                              | ❌         | ❌         | Not yet supported - Planned for Next 16              |
