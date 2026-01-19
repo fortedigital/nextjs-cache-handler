@@ -18,7 +18,7 @@
     "next",
     "redis"
   ],
-  "version": "3.0.0-next16-alpha.4",
+  "version": "3.0.0-next16-alpha.5",
   "type": "module",
   "license": "MIT",
   "description": "Next.js cache handlers",
@@ -50,6 +50,10 @@
     "./helpers/withAbortSignalProxy": {
       "require": "./dist/helpers/withAbortSignalProxy.cjs",
       "import": "./dist/helpers/withAbortSignalProxy.js"
+    },
+    "./helpers/ioredisAdapter": {
+      "require": "./dist/helpers/ioredisAdapter.cjs",
+      "import": "./dist/helpers/ioredisAdapter.js"
     }
   },
   "typesVersions": {
@@ -80,6 +84,9 @@
       ],
       "helpers/withAbortSignalProxy": [
         "dist/helpers/withAbortSignalProxy.d.ts"
+      ],
+      "helpers/ioredisAdapter": [
+        "dist/helpers/ioredisAdapter.d.ts"
       ]
     }
   },
@@ -106,9 +113,10 @@
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.2",
     "globals": "^16.5.0",
+    "ioredis": "^5.9.2",
     "jest": "^30.2.0",
-    "prettier": "^3.7.4",
-    "prettier-plugin-packagejson": "2.5.21",
+    "prettier": "^3.8.0",
+    "prettier-plugin-packagejson": "2.5.22",
     "rimraf": "6.1.2",
     "ts-jest": "^29.4.6",
     "tsup": "^8.5.1",
@@ -118,7 +126,13 @@
   },
   "peerDependencies": {
     "@redis/client": ">= 5.8.3",
+    "ioredis": ">= 5.0.0",
     "next": ">=16.0.0-beta.0"
+  },
+  "peerDependenciesMeta": {
+    "ioredis": {
+      "optional": true
+    }
   },
   "distTags": [
     "next16"

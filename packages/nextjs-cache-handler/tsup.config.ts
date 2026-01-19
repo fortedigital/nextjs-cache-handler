@@ -9,6 +9,7 @@ export const tsup = defineConfig({
     "src/helpers/redisClusterAdapter.ts",
     "src/helpers/withAbortSignal.ts",
     "src/helpers/withAbortSignalProxy.ts",
+    "src/helpers/ioredisAdapter.ts",
   ],
   splitting: false,
   outDir: "dist",

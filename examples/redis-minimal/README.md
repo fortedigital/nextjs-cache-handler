@@ -33,6 +33,15 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 Modify the `.env` file if you need to configure Redis connection settings. The default Redis URL is used if not specified.
 
+### Redis Client Configuration
+
+The example supports both Redis clients:
+
+- **@redis/client** (default): Set `REDIS_TYPE="redis"` or leave unset
+- **ioredis**: Set `REDIS_TYPE="ioredis"`
+
+This allows you to test the `ioredisAdapter` functionality.
+
 ## Examples
 
 The application includes several examples demonstrating different Next.js caching features:
