@@ -237,6 +237,11 @@ export default function createHandler({
         parseBuffersToStrings({ ...cacheHandlerValue, value: valueForStorage });
       }
 
+      const serializedValue = JSON.stringify({
+        ...cacheHandlerValue,
+        value: valueForStorage,
+      });
+
       const setTagsOperation = client
         .withAbortSignal(AbortSignal.timeout(timeoutMs))
         .hSet(
@@ -250,13 +255,6 @@ export default function createHandler({
             .withAbortSignal(AbortSignal.timeout(timeoutMs))
             .hSet(keyPrefix + sharedTagsTtlKey, key, lifespan.expireAt)
         : undefined;
-
-      await Promise.all([setTagsOperation, setSharedTtlOperation]);
-
-      const serializedValue = JSON.stringify({
-        ...cacheHandlerValue,
-        value: valueForStorage,
-      });
 
       switch (keyExpirationStrategy) {
         case "EXAT": {
@@ -297,7 +295,16 @@ export default function createHandler({
         }
       }
 
-      await Promise.all([setOperation, expireOperation]);
+      // Execute all Redis operations atomically in a single Promise.all to prevent race conditions
+      // where a concurrent get() might find the value but not the tags, causing a false cache miss
+      await Promise.all(
+        [
+          setTagsOperation,
+          setSharedTtlOperation,
+          setOperation,
+          expireOperation,
+        ].filter(Boolean),
+      );
     },
     async revalidateTag(tag) {
       assertClientIsReady();
