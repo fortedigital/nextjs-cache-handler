@@ -333,5 +333,8 @@ export default function createHandler({
           .hDel(keyPrefix + sharedTagsTtlKey, key),
       ]);
     },
+    async prepare() {
+      await revalidateSharedKeys();
+    },
   };
 }

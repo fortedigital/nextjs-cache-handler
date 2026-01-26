@@ -649,6 +649,30 @@ export class CacheHandler implements NextCacheHandler {
         "Successfully created CacheHandler configuration.",
       );
     }
+
+    const prepareResults = await Promise.allSettled(
+      handlersList.map((handler) => handler.prepare?.()),
+    );
+
+    if (CacheHandler.#debug) {
+      prepareResults.forEach((result, index) => {
+        if (result.status === "rejected") {
+          console.warn(
+            "[CacheHandler] [handler: %s] [method: %s] %s",
+            handlersList[index]?.name ?? `unknown-${index}`,
+            "prepare",
+            `Error: ${result.reason}`,
+          );
+        } else if (result.status === "fulfilled" && result.value !== undefined) {
+          console.info(
+            "[CacheHandler] [handler: %s] [method: %s] %s",
+            handlersList[index]?.name ?? `unknown-${index}`,
+            "prepare",
+            "Successfully completed preparation tasks.",
+          );
+        }
+      });
+    }
   }
 
   /**
