@@ -6,6 +6,7 @@ export const register = async () => {
     await registerInitialCache(CacheHandler, {
       setOnlyIfNotExists:
         process.env.INITIAL_CACHE_SET_ONLY_IF_NOT_EXISTS === "true",
+      pages: true,
     });
   }
 };

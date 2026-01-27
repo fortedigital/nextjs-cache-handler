@@ -51,6 +51,11 @@ const examples = [
     label: "Static Params",
     description: "Static params generation",
   },
+  {
+    href: "/examples/pages-router-navigation",
+    label: "Pages Router",
+    description: "Pages Router navigation example",
+  },
 ];
 
 export function Navigation() {
