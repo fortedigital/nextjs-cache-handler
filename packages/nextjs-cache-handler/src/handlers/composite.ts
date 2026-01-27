@@ -50,5 +50,9 @@ export default function createHandler({
     async delete(key) {
       await Promise.all(handlers.map((handler) => handler.delete?.(key)));
     },
+
+    async prepare() {
+      await Promise.all(handlers.map((handler) => handler.prepare?.()));
+    },
   };
 }
