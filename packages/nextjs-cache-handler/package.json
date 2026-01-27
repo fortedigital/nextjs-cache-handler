@@ -18,7 +18,7 @@
     "next",
     "redis"
   ],
-  "version": "3.0.0-next16-alpha.5",
+  "version": "3.0.0-next16-alpha.6",
   "type": "module",
   "license": "MIT",
   "description": "Next.js cache handlers",
