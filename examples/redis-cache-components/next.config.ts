@@ -3,7 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   cacheComponents: true,
   cacheHandlers: {
-    remote: require.resolve("./cache-handler.mjs"),
+    default: require.resolve("./cache-handler.js"),
+    remote: require.resolve("./cache-handler.js"),
   },
 };
 

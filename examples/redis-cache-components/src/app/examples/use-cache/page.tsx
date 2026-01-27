@@ -40,13 +40,13 @@ export default async function UseCacheExample() {
   return (
     <ExampleLayout
       title="use cache Directive"
-      description="This example demonstrates the basic 'use cache' directive. Components marked with 'use cache' are automatically included in the static shell during prerendering."
+      description="This example demonstrates the basic &apos;use cache&apos; directive. Components marked with &apos;use cache&apos; are automatically included in the static shell during prerendering."
     >
       <div className="space-y-6">
         <InfoCard title="How it works">
           <ul className="list-disc list-inside space-y-1">
             <li>
-              The <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">'use cache'</code> directive
+              The <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">&apos;use cache&apos;</code> directive
               marks a component or function for caching
             </li>
             <li>

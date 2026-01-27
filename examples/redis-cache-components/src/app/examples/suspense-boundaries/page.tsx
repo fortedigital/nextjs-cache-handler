@@ -11,7 +11,7 @@ async function StaticContent() {
         Static Content (Prerendered)
       </div>
       <p className="text-green-800 dark:text-green-200 text-sm">
-        This content is part of the static HTML shell. It's rendered at build time
+        This content is part of the static HTML shell. It&apos;s rendered at build time
         and sent immediately to the browser.
       </p>
     </div>
@@ -34,7 +34,7 @@ async function CachedContent() {
         Cached Content (In Static Shell)
       </div>
       <p className="text-blue-800 dark:text-blue-200 text-sm mb-2">
-        This content uses 'use cache' and is included in the static shell.
+        This content uses &apos;use cache&apos; and is included in the static shell.
       </p>
       <div className="mt-2">
         <div className="text-sm">
@@ -91,7 +91,7 @@ export default async function SuspenseBoundariesExample() {
               <strong>Static content</strong> is prerendered and included in the static HTML shell
             </li>
             <li>
-              <strong>Cached content</strong> (with 'use cache') is also included in the static shell
+              <strong>Cached content</strong> (with &apos;use cache&apos;) is also included in the static shell
             </li>
             <li>
               <strong>Dynamic content</strong> wrapped in Suspense streams in at request time

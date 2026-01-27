@@ -11,7 +11,7 @@ async function MaxCache() {
   return (
     <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
       <div className="font-medium text-gray-700 dark:text-gray-300 mb-1">
-        cacheLife("max")
+        cacheLife(&quot;max&quot;)
       </div>
       <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
         Cache never expires (or expires at deployment)
@@ -31,7 +31,7 @@ async function HoursCache() {
   return (
     <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
       <div className="font-medium text-gray-700 dark:text-gray-300 mb-1">
-        cacheLife("hours")
+        cacheLife(&quot;hours&quot;)
       </div>
       <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
         Cache expires after a few hours
@@ -51,7 +51,7 @@ async function DaysCache() {
   return (
     <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
       <div className="font-medium text-gray-700 dark:text-gray-300 mb-1">
-        cacheLife("days")
+        cacheLife(&quot;days&quot;)
       </div>
       <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
         Cache expires after a few days
@@ -77,15 +77,15 @@ export default async function CacheLifeExample() {
               how long cached data remains valid
             </li>
             <li>
-              Three profiles: <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">"max"</code>,{" "}
-              <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">"hours"</code>, and{" "}
-              <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">"days"</code>
+              Three profiles: <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">&quot;max&quot;</code>,{" "}
+              <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">&quot;hours&quot;</code>, and{" "}
+              <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">&quot;days&quot;</code>
             </li>
             <li>
               Replaces route segment config like <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">export const revalidate = 3600</code>
             </li>
             <li>
-              Profiles are primarily designed for Vercel's infrastructure
+              Profiles are primarily designed for Vercel&apos;s infrastructure
             </li>
             <li>
               Custom cache handlers may not fully differentiate between profiles

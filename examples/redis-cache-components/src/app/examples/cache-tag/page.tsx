@@ -106,7 +106,7 @@ export default async function CacheTagExample() {
           </h2>
           <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-              Click the button below to revalidate the "futurama" tag. After revalidation,
+              Click the button below to revalidate the &quot;futurama&quot; tag. After revalidation,
               refresh the page to see fresh data.
             </p>
             <RevalidateButton />
