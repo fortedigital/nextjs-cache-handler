@@ -295,8 +295,6 @@ export default function createHandler({
         }
       }
 
-      // Execute all Redis operations atomically in a single Promise.all to prevent race conditions
-      // where a concurrent get() might find the value but not the tags, causing a false cache miss
       await Promise.all(
         [
           setTagsOperation,
