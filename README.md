@@ -363,9 +363,9 @@ explicitly choose the cache population strategy instead of enforcing a single de
 
 ## Examples
 
-### Example Project
+### Traditional Cache API Example
 
-The [example project](./examples/redis-minimal) provides a comprehensive demonstration of Next.js caching features with interactive examples:
+The [redis-minimal example project](./examples/redis-minimal) provides a comprehensive demonstration of Next.js traditional caching features with interactive examples:
 
 - **Default Cache** - Demonstrates `force-cache` behavior
 - **No Store** - Shows `no-store` for always-fresh data
@@ -385,6 +385,34 @@ npm run start
 ```
 
 > **Note:** Caching only works in production mode. See the [examples README](./examples/redis-minimal/README.md) for more details.
+
+### Cache Components Example (Next.js 16)
+
+The [redis-cache-components example project](./examples/redis-cache-components) demonstrates Next.js 16 Cache Components features, which is a different caching model from the traditional API:
+
+- **use cache** - Basic `'use cache'` directive for component-level caching
+- **use cache: remote** - Remote caching with Redis using `cacheHandlers.remote`
+- **cacheLife** - Cache expiration with `cacheLife('max' | 'hours' | 'days')`
+- **cacheTag** - Cache tagging and selective invalidation
+- **Suspense Boundaries** - Partial Prerendering (PPR) with Suspense
+
+To run the Cache Components examples:
+
+```bash
+pnpm install
+cd examples/redis-cache-components
+npm run build
+npm run start
+```
+
+> **Note:** Cache Components works in both development and production mode. See the [Cache Components README](./examples/redis-cache-components/README.md) for more details.
+
+**Key Differences:**
+- Cache Components requires `cacheComponents: true` in next.config
+- Uses `cacheHandlers.remote` instead of `cacheHandler`
+- Uses `'use cache'` directive instead of route segment configs
+- Uses `cacheLife()` instead of `revalidate`
+- Many traditional cache APIs don't work the same way
 
 ### Production Setup Example
 
