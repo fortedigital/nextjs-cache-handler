@@ -296,7 +296,7 @@ export async function registerInitialCache(
     let html: string | undefined;
     let pageData: string | object | undefined;
     let meta: NextRouteMetadata | undefined;
-    let rscData: string | undefined;
+    let prefetchRscData: string | undefined;
 
     if (debug) {
       console.info(
@@ -307,7 +307,7 @@ export async function registerInitialCache(
     }
 
     try {
-      [html, pageData, rscData, meta] = await Promise.all([
+      [html, pageData, prefetchRscData, meta] = await Promise.all([
         fsPromises.readFile(`${pathToRouteFiles}.html`, "utf-8"),
         fsPromises
           .readFile(
@@ -329,25 +329,25 @@ export async function registerInitialCache(
           }),
         isAppRouter
           ? fsPromises
-              .readFile(`${pathToRouteFiles}.prefetch.rsc`, "utf-8")
-              .then((data) => data)
-              .catch((error) => {
-                if (debug) {
-                  console.warn(
-                    "[CacheHandler] [%s] %s %s",
-                    "registerInitialCache",
-                    "Failed to read page prefetch data, assuming it does not exist",
-                    `Error: ${error}`,
-                  );
-                }
+            .readFile(`${pathToRouteFiles}.prefetch.rsc`, "utf-8")
+            .then((data) => data)
+            .catch((error) => {
+              if (debug) {
+                console.warn(
+                  "[CacheHandler] [%s] %s %s",
+                  "registerInitialCache",
+                  "Failed to read page prefetch data, assuming it does not exist",
+                  `Error: ${error}`,
+                );
+              }
 
-                return undefined;
-              })
+              return undefined;
+            })
           : undefined,
         isAppRouter
           ? fsPromises
-              .readFile(`${pathToRouteFiles}.meta`, "utf-8")
-              .then((data) => JSON.parse(data) as NextRouteMetadata)
+            .readFile(`${pathToRouteFiles}.meta`, "utf-8")
+            .then((data) => JSON.parse(data) as NextRouteMetadata)
           : undefined,
       ]);
     } catch (error) {
@@ -372,6 +372,7 @@ export async function registerInitialCache(
     }
 
     try {
+      const rscData = prefetchRscData ?? pageData;
       const value: IncrementalCachedAppPageValue &
         Partial<Pick<IncrementalCachedPageValue, "pageData">> = {
         kind: (isAppRouter ? "APP_PAGE" : "PAGES") as unknown as any,
@@ -381,7 +382,9 @@ export async function registerInitialCache(
         headers: meta?.headers,
         status: meta?.status,
         rscData:
-          isAppRouter && rscData ? Buffer.from(rscData, "utf-8") : undefined,
+          isAppRouter && typeof rscData === "string"
+            ? Buffer.from(rscData, "utf-8")
+            : undefined,
         segmentData: undefined, // TODO: Add segment data
       };
 
