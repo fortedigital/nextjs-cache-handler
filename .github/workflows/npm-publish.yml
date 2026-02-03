@@ -9,6 +9,11 @@ on:
         required: false
         type: boolean
         default: false
+
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+
 env:
   rootDir: ./packages/nextjs-cache-handler
 jobs:
@@ -20,16 +25,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        
       - name: Copy README file to package directory
         run: |
           cp ../../README.md .
+          
       - uses: pnpm/action-setup@v4
+      
       - uses: actions/setup-node@v4
         with:
           cache: pnpm
           node-version: lts/*
           registry-url: "https://registry.npmjs.org"
+          
       - run: pnpm install --frozen-lockfile
+      
       - name: Publish to npm
         run: |
           if [ "${{ github.event.inputs.prerelease }}" == "true" ]; then
@@ -37,5 +47,3 @@ jobs:
           else
             npm publish --access public
           fi
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
