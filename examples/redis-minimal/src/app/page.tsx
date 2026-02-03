@@ -104,6 +104,17 @@ const examples = [
       "Short revalidation period (5 seconds)",
     ],
   },
+  {
+    href: "/examples/pages-router-navigation",
+    title: "Pages Router Navigation",
+    description:
+      "Pages Router example with getStaticProps. Demonstrates navigation between Pages Router pages when using registerInitialCache with pages: true.",
+    features: [
+      "Pages Router with getStaticProps",
+      "ISR with revalidation",
+      "Client-side navigation between pages",
+    ],
+  },
 ];
 
 export default async function Home() {

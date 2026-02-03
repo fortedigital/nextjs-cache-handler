@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 const examples = [
@@ -58,8 +58,9 @@ const examples = [
   },
 ];
 
-export function Navigation() {
-  const pathname = usePathname();
+export function NavigationPages() {
+  const router = useRouter();
+  const pathname = router.pathname;
   const [loading, setLoading] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -209,3 +210,4 @@ export function Navigation() {
     </>
   );
 }
+
