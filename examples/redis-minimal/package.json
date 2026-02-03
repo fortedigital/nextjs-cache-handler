@@ -15,7 +15,7 @@
   "dependencies": {
     "@fortedigital/nextjs-cache-handler": "workspace:*",
     "ioredis": "^5.8.2",
-    "next": "^15.5.6",
+    "next": "^16.1.5",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "redis": "^5.10.0"
