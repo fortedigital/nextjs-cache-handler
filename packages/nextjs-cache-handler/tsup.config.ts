@@ -10,6 +10,7 @@ export const tsup = defineConfig({
     "src/helpers/withAbortSignal.ts",
     "src/helpers/withAbortSignalProxy.ts",
     "src/helpers/ioredisAdapter.ts",
+    "src/helpers/getClientInfoTag.ts",
   ],
   splitting: false,
   outDir: "dist",

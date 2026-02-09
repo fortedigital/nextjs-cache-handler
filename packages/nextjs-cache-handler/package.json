@@ -54,6 +54,10 @@
     "./helpers/ioredisAdapter": {
       "require": "./dist/helpers/ioredisAdapter.cjs",
       "import": "./dist/helpers/ioredisAdapter.js"
+    },
+    "./helpers/getClientInfoTag": {
+      "require": "./dist/helpers/getClientInfoTag.cjs",
+      "import": "./dist/helpers/getClientInfoTag.js"
     }
   },
   "typesVersions": {
@@ -87,6 +91,9 @@
       ],
       "helpers/ioredisAdapter": [
         "dist/helpers/ioredisAdapter.d.ts"
+      ],
+      "helpers/getClientInfoTag": [
+        "dist/helpers/getClientInfoTag.d.ts"
       ]
     }
   },

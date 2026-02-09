@@ -6,6 +6,7 @@ import createLruHandler from "@fortedigital/nextjs-cache-handler/local-lru";
 import createRedisHandler from "@fortedigital/nextjs-cache-handler/redis-strings";
 import createCompositeHandler from "@fortedigital/nextjs-cache-handler/composite";
 import { ioredisAdapter } from "@fortedigital/nextjs-cache-handler/helpers/ioredisAdapter";
+import { getClientInfoTag } from "@fortedigital/nextjs-cache-handler/helpers/getClientInfoTag";
 
 const isSingleConnectionModeEnabled = !!process.env.REDIS_SINGLE_CONNECTION;
 const redisType = process.env.REDIS_TYPE || "redis"; // "redis" or "ioredis"
@@ -17,7 +18,11 @@ async function setupRedisClient() {
     try {
       if (redisType === "ioredis") {
         console.info(`Using ioredis client...`);
-        const ioredisClient = new Redis(process.env.REDIS_URL);
+        const ioredisClient = new Redis(process.env.REDIS_URL, {
+          // Set clientInfoTag for Redis driver identification
+          // This helps identify the framework in CLIENT LIST output
+          clientInfoTag: getClientInfoTag(),
+        });
 
         // Wait for connection to be ready
         console.info("Connecting ioredis client...");
@@ -35,6 +40,9 @@ async function setupRedisClient() {
         redisClient = createClient({
           url: process.env.REDIS_URL,
           pingInterval: 10000,
+          // Set clientInfoTag for Redis driver identification
+          // This helps identify the framework in CLIENT LIST output
+          clientInfoTag: getClientInfoTag(),
         });
 
         console.info("Connecting Redis client...");
