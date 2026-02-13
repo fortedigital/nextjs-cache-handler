@@ -173,6 +173,15 @@ export type Handler = {
    * @returns A Promise that resolves when the cache entry has been successfully deleted.
    */
   delete?: (key: string) => Promise<void>;
+
+  /**
+   * Prepares the handler for use, such as cleaning up expired entries or stale resources.
+   * This method is optional and will be automatically called by the `CacheHandler` class after handlers are configured.
+   * Handlers can use this to perform one-time setup tasks, remove stale entries, or prepare internal state.
+   *
+   * @returns A Promise that resolves when the preparation tasks have been completed.
+   */
+  prepare?: () => Promise<void>;
 };
 /**
  * Represents the parameters for Time-to-Live (TTL) configuration.
