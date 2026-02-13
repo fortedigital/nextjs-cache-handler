@@ -6,6 +6,11 @@ A caching utility built originally on top of [`@neshca/cache-handler`](https://w
 
 Starting from version `2.0.0`, this package no longer depends on `@neshca/cache-handler` and is fully maintained and compatible with Next.js 15 and partially 16. See the [compatibility matrix](#feature-compatibility-matrix) for detailed feature support.
 
+**Version Requirements:**
+
+- **Next.js 15**: Version 2.0.0+ (version 3.0.0+ recommended for latest improvements and maintenance development)
+- **Next.js 16**: Version 3.0.0+ required
+
 ## Table of Contents
 
 - [Documentation](#documentation)
@@ -198,11 +203,11 @@ We aim to keep up with new Next.js releases and will introduce major changes wit
 | `redis` package (node-redis)                         | ✅         | ✅         | Official Redis client - fully supported              |
 | `ioredis` package                                    | ✅         | ✅         | IORedis client - fully supported                     |
 | **Next.js 16 New Features**                          |
-| `cacheHandlers` config (for `'use cache'`)           | ❌         | ❌         | Not yet supported - Planned for Next 16              |
-| `'use cache'` directive                              | ❌         | ❌         | Not yet supported - Planned for Next 16              |
-| `'use cache: remote'` directive                      | ❌         | ❌         | Not yet supported - Planned for Next 16              |
-| `'use cache: private'` directive                     | ❌         | ❌         | Not yet supported - Planned for Next 16              |
-| `cacheComponents`                                    | ❌         | ❌         | Not yet supported - Planned for Next 16              |
+| `cacheHandlers` config (for `'use cache'`)           | ❌         | ❌         | Not yet supported - Help needed                      |
+| `'use cache'` directive                              | ❌         | ❌         | Not yet supported - Help needed                      |
+| `'use cache: remote'` directive                      | ❌         | ❌         | Not yet supported - Help needed                      |
+| `'use cache: private'` directive                     | ❌         | ❌         | Not yet supported - Help needed                      |
+| `cacheComponents`                                    | ❌         | ❌         | Not yet supported - Help needed                      |
 
 **Notes:**
 
@@ -261,7 +266,7 @@ redis = withAdapter(
         port: Number(port),
       };
     },
-  })
+  }),
 );
 
 // after using withAdapter you can use redis cluster instance as parameter for createRedisHandler
@@ -457,8 +462,8 @@ CacheHandler.onCreation(() => {
           .disconnect()
           .catch(() =>
             console.warn(
-              "Failed to quit the Redis client after failing to connect."
-            )
+              "Failed to quit the Redis client after failing to connect.",
+            ),
           );
       }
     }
@@ -656,7 +661,7 @@ const cachedAxios = neshClassicCache(async (url) => {
 export default async function handler(request, response) {
   const data = await cachedAxios(
     { revalidate: 5, tags: ["api-data"], responseContext: response },
-    new URL("https://api.example.com/data.json")
+    new URL("https://api.example.com/data.json"),
   );
   response.json(data);
 }
