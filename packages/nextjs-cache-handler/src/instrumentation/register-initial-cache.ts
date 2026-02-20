@@ -1,9 +1,9 @@
 import { promises as fsPromises } from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import { PRERENDER_MANIFEST, SERVER_DIRECTORY } from "next/constants";
+import { PRERENDER_MANIFEST, SERVER_DIRECTORY } from "next/constants.js";
+import { CACHE_ONE_YEAR } from "next/dist/lib/constants.js";
 import type { PrerenderManifest } from "next/dist/build";
-import { CACHE_ONE_YEAR } from "next/dist/lib/constants";
 import {
   CachedFetchValue,
   CachedRouteValue,
@@ -329,25 +329,25 @@ export async function registerInitialCache(
           }),
         isAppRouter
           ? fsPromises
-            .readFile(`${pathToRouteFiles}.prefetch.rsc`, "utf-8")
-            .then((data) => data)
-            .catch((error) => {
-              if (debug) {
-                console.warn(
-                  "[CacheHandler] [%s] %s %s",
-                  "registerInitialCache",
-                  "Failed to read page prefetch data, assuming it does not exist",
-                  `Error: ${error}`,
-                );
-              }
+              .readFile(`${pathToRouteFiles}.prefetch.rsc`, "utf-8")
+              .then((data) => data)
+              .catch((error) => {
+                if (debug) {
+                  console.warn(
+                    "[CacheHandler] [%s] %s %s",
+                    "registerInitialCache",
+                    "Failed to read page prefetch data, assuming it does not exist",
+                    `Error: ${error}`,
+                  );
+                }
 
-              return undefined;
-            })
+                return undefined;
+              })
           : undefined,
         isAppRouter
           ? fsPromises
-            .readFile(`${pathToRouteFiles}.meta`, "utf-8")
-            .then((data) => JSON.parse(data) as NextRouteMetadata)
+              .readFile(`${pathToRouteFiles}.meta`, "utf-8")
+              .then((data) => JSON.parse(data) as NextRouteMetadata)
           : undefined,
       ]);
     } catch (error) {
