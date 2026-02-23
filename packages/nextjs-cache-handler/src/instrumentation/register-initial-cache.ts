@@ -1,9 +1,9 @@
 import { promises as fsPromises } from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import { PRERENDER_MANIFEST, SERVER_DIRECTORY } from "next/constants";
+import { PRERENDER_MANIFEST, SERVER_DIRECTORY } from "next/constants.js";
+import { CACHE_ONE_YEAR } from "next/dist/lib/constants.js";
 import type { PrerenderManifest } from "next/dist/build";
-import { CACHE_ONE_YEAR } from "next/dist/lib/constants";
 import {
   CachedFetchValue,
   CachedRouteValue,
