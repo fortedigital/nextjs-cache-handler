@@ -9,6 +9,10 @@ on:
         required: false
         type: boolean
         default: false
+      custom_tag:
+        description: 'Publish with custom dist-tag only (e.g. 2.x). Does not set latest or next.'
+        required: false
+        type: string
 
 permissions:
   id-token: write  # Required for OIDC
@@ -42,7 +46,9 @@ jobs:
       
       - name: Publish to npm
         run: |
-          if [ "${{ github.event.inputs.prerelease }}" == "true" ]; then
+          if [ -n "${{ github.event.inputs.custom_tag }}" ]; then
+            npm publish --access public --tag ${{ github.event.inputs.custom_tag }}
+          elif [ "${{ github.event.inputs.prerelease }}" == "true" ]; then
             npm publish --access public --tag next
           else
             npm publish --access public
