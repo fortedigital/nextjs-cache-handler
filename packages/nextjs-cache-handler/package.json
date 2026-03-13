@@ -73,6 +73,9 @@
       "redis-strings": [
         "dist/handlers/redis-strings.d.ts"
       ],
+      "redis-strings-cache-components": [
+        "dist/handlers/redis-strings-cache-components.d.ts"
+      ],
       "local-lru": [
         "dist/handlers/local-lru.d.ts"
       ],
