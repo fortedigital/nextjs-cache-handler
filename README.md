@@ -150,13 +150,23 @@ CacheHandler.onCreation(() => ({
 export default CacheHandler;
 ```
 
-Then configure it in your `next.config.js`:
+Then configure it in your `next.config.js` or `next.config.mjs`:
 
 ```js
 // next.config.js
 module.exports = {
   cacheHandler: require.resolve("./cache-handler.mjs"),
 };
+```
+```js
+// next.config.mjs
+import { fileURLToPath } from "node:url";
+
+const nextConfig = {
+  cacheHandler: fileURLToPath(new URL("./cache-handler.mjs", import.meta.url)),
+};
+
+export default nextConfig;
 ```
 
 For a complete example with error handling, fallbacks, and production setup, see the [Examples](#examples) section below. The quick start code is not meant for production use.
