@@ -50,7 +50,6 @@ export type CacheHandlerParametersGetWithTags = [
  * Context information provided during cache set operations.
  */
 export type SetContext = {
-
   /**
    * When true, the cache write should only occur if the key does not already exist.
    * Cache handlers should use non-destructive write operations (e.g., Redis NX)
@@ -154,7 +153,11 @@ export type Handler = {
    *
    * Use the absolute time (`expireAt`) to set and expiration time for the cache entry in your cache store to be in sync with the file system cache.
    */
-  set: (key: string, value: CacheHandlerValue, ctx?: SetContext) => Promise<void>;
+  set: (
+    key: string,
+    value: CacheHandlerValue,
+    ctx?: SetContext,
+  ) => Promise<void>;
   /**
    * Deletes all cache entries that are associated with the specified tag.
    * See [fetch `options.next.tags` and `revalidateTag` ↗](https://nextjs.org/docs/app/building-your-application/caching#fetch-optionsnexttags-and-revalidatetag)
