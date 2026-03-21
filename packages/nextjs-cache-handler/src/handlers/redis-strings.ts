@@ -1,7 +1,10 @@
 import { REVALIDATED_TAGS_KEY } from "../constants";
 import { isImplicitTag } from "../helpers/isImplicitTag";
 import { CacheHandlerValue, Handler } from "./cache-handler.types";
-import { CreateRedisStringsHandlerOptions } from "./redis-strings.types";
+import {
+  type CacheValueSerializer,
+  type CreateRedisStringsHandlerOptions,
+} from "./redis-strings.types";
 import {
   convertStringsToBuffers,
   parseBuffersToStrings,
@@ -9,6 +12,19 @@ import {
 import type { RedisClientType } from "@redis/client";
 import { RedisClusterCacheAdapter } from "../helpers/redisClusterAdapter";
 import { withAbortSignalProxy } from "../helpers/withAbortSignalProxy";
+
+export type { CacheValueSerializer } from "./redis-strings.types";
+
+export const jsonCacheValueSerializer: CacheValueSerializer = {
+  serialize(value) {
+    return JSON.stringify(value);
+  },
+  deserialize(stored) {
+    return JSON.parse(
+      typeof stored === "string" ? stored : String(stored),
+    ) as CacheHandlerValue | null;
+  },
+};
 
 /**
  * Creates a Handler for handling cache operations using Redis strings.
@@ -33,6 +49,7 @@ export default function createHandler({
   timeoutMs = 5_000,
   keyExpirationStrategy = "EXPIREAT",
   revalidateTagQuerySize = 10_000,
+  valueSerializer = jsonCacheValueSerializer,
 }: CreateRedisStringsHandlerOptions<
   RedisClientType | RedisClusterCacheAdapter
 >): Handler {
@@ -176,7 +193,7 @@ export default function createHandler({
         return null;
       }
 
-      const cacheValue = JSON.parse(result) as CacheHandlerValue | null;
+      const cacheValue = valueSerializer.deserialize(result);
 
       if (!cacheValue) {
         return null;
@@ -237,7 +254,7 @@ export default function createHandler({
         parseBuffersToStrings({ ...cacheHandlerValue, value: valueForStorage });
       }
 
-      const serializedValue = JSON.stringify({
+      const serializedValue = valueSerializer.serialize({
         ...cacheHandlerValue,
         value: valueForStorage,
       });

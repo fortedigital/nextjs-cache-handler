@@ -1,5 +1,15 @@
 import type { RedisClientType } from "@redis/client";
 import { RedisClusterCacheAdapter } from "../helpers/redisClusterAdapter";
+import type { CacheHandlerValue } from "./cache-handler.types";
+
+/**
+ * Pluggable wire-format codec for Redis string values (JSON, compression, encryption, etc.).
+ * Default behavior is JSON.stringify / JSON.parse (see `jsonCacheValueSerializer` export).
+ */
+export type CacheValueSerializer = {
+  serialize(value: CacheHandlerValue): string;
+  deserialize(stored: string): CacheHandlerValue | null;
+};
 
 export type RedisCompliantCachedRouteValue = {
   // See: https://github.com/vercel/next.js/blob/f5444a16ec2ef7b82d30048890b613aa3865c1f1/packages/next/src/server/response-cache/types.ts#L97
@@ -72,4 +82,11 @@ export type CreateRedisStringsHandlerOptions<
    * @default 'EXPIREAT'
    */
   keyExpirationStrategy?: "EXAT" | "EXPIREAT";
+  /**
+   * Optional codec for values stored in Redis (`SET`/`GET`).
+   * Implement compression, encryption, or custom formats in your app; this package stays dependency-free.
+   *
+   * @default JSON.stringify / JSON.parse (same as previous releases)
+   */
+  valueSerializer?: CacheValueSerializer;
 };
