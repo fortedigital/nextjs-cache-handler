@@ -5,10 +5,14 @@ import type { CacheHandlerValue } from "./cache-handler.types";
 /**
  * Pluggable wire-format codec for Redis string values (JSON, compression, encryption, etc.).
  * Default behavior is JSON.stringify / JSON.parse (see `jsonCacheValueSerializer` export).
+ *
+ * Both methods may return a `Promise`, enabling non-blocking async codecs such as
+ * stream-based compression (`zlib.brotliCompress`) or encryption (`crypto.subtle`).
+ * Synchronous implementations continue to work unchanged — `await` on a plain value is a no-op.
  */
 export type CacheValueSerializer = {
-  serialize(value: CacheHandlerValue): string;
-  deserialize(stored: string): CacheHandlerValue | null;
+  serialize(value: CacheHandlerValue): string | Promise<string>;
+  deserialize(stored: string): CacheHandlerValue | null | Promise<CacheHandlerValue | null>;
 };
 
 export type RedisCompliantCachedRouteValue = {
@@ -85,6 +89,10 @@ export type CreateRedisStringsHandlerOptions<
   /**
    * Optional codec for values stored in Redis (`SET`/`GET`).
    * Implement compression, encryption, or custom formats in your app; this package stays dependency-free.
+   *
+   * Both `serialize` and `deserialize` may return a `Promise`, enabling non-blocking async codecs
+   * (e.g. `zlib.brotliCompress` / `zlib.brotliDecompress`) that avoid blocking the Node.js event loop.
+   * Synchronous implementations continue to work unchanged.
    *
    * @default JSON.stringify / JSON.parse (same as previous releases)
    */

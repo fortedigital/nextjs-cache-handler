@@ -193,7 +193,7 @@ export default function createHandler({
         return null;
       }
 
-      const cacheValue = valueSerializer.deserialize(result);
+      const cacheValue = await valueSerializer.deserialize(result);
 
       if (!cacheValue) {
         return null;
@@ -254,7 +254,7 @@ export default function createHandler({
         parseBuffersToStrings({ ...cacheHandlerValue, value: valueForStorage });
       }
 
-      const serializedValue = valueSerializer.serialize({
+      const serializedValue = await valueSerializer.serialize({
         ...cacheHandlerValue,
         value: valueForStorage,
       });
