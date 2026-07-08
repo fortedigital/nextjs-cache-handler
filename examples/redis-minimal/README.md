@@ -256,6 +256,10 @@ Example pages expose a server render timestamp via `data-testid="build-timestamp
 **Local:**
 
 ```bash
+pnpm build
+```
+
+```bash
 redis-server
 REDIS_URL=redis://localhost:6379 pnpm test:e2e
 ```
