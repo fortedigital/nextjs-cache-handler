@@ -11,6 +11,7 @@ import {
 } from "next/dist/server/response-cache";
 import type { OutgoingHttpHeaders } from "http";
 import { getTagsFromHeaders } from "../helpers/getTagsFromHeaders";
+import { getImplicitPathTag } from "../helpers/getImplicitPathTag";
 import { Revalidate } from "../handlers/cache-handler.types";
 import pLimit from "p-limit";
 
@@ -393,6 +394,7 @@ export async function registerInitialCache(
         revalidate,
         internal_lastModified: lastModified,
         setOnlyIfNotExists: setOnlyIfNotExists,
+        tags: [getImplicitPathTag(cachePath)],
       });
 
       if (debug) {

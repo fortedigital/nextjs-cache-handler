@@ -247,6 +247,21 @@ This example uses a custom Redis cache handler configured in `cache-handler.mjs`
 
 **Note:** The cache handler only works in production mode. In development mode, Next.js bypasses the cache handler entirely. You'll see a warning message in the console: `"Next.js does not use the cache in development mode. Use production mode to enable caching."`
 
+## E2E integration tests
+
+Example pages expose a server render timestamp via `data-testid="build-timestamp"` for Playwright assertions against real Redis caching in production mode.
+
+**CI:** [`.github/workflows/integration-tests.yml`](../../.github/workflows/integration-tests.yml) — Redis service, `pnpm build`, Playwright `webServer` runs `next start`.
+
+**Local:**
+
+```bash
+redis-server
+REDIS_URL=redis://localhost:6379 pnpm test:e2e
+```
+
+From repo root, Turborepo runs `build` first (cached when unchanged) then Playwright e2e. Playwright starts `next start` on port 3000 (`reuseExistingServer` when not in CI).
+
 ## Technologies
 
 - Next.js 16

@@ -12,6 +12,7 @@ interface Item {
 
 interface IndexPageProps {
   items: Item[];
+  timestamp: string;
 }
 
 export const getStaticProps: GetStaticProps<IndexPageProps> = async () => {
@@ -36,6 +37,7 @@ export const getStaticProps: GetStaticProps<IndexPageProps> = async () => {
   return {
     props: {
       items,
+      timestamp: new Date().toISOString(),
     },
     revalidate: 3600,
   };
@@ -43,6 +45,7 @@ export const getStaticProps: GetStaticProps<IndexPageProps> = async () => {
 
 export default function PagesRouterNavigationIndex({
   items,
+  timestamp,
 }: IndexPageProps) {
   return (
     <ExampleLayout
@@ -50,6 +53,20 @@ export default function PagesRouterNavigationIndex({
       description="This example demonstrates Pages Router pages using getStaticProps. Navigate between items to test client-side navigation with registerInitialCache."
     >
       <div className="space-y-6">
+        <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+          <div>
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              Rendered at:
+            </span>{" "}
+            <span
+              data-testid="build-timestamp"
+              className="text-gray-900 dark:text-gray-100 font-mono text-sm"
+            >
+              {timestamp}
+            </span>
+          </div>
+        </div>
+
         <InfoCard title="How it works">
           <ul className="list-disc list-inside space-y-1">
             <li>

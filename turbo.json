@@ -16,6 +16,10 @@
     },
     "test": {
       "cache": true
+    },
+    "test:e2e": {
+      "dependsOn": ["^build", "build"],
+      "cache": false
     }
   }
 }

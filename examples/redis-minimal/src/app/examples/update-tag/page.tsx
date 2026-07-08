@@ -54,6 +54,7 @@ async function fetchPosts(): Promise<
 }
 
 export default async function UpdateTagExample() {
+  const timestamp = new Date().toISOString();
   const [userProfile, posts] = await Promise.all([
     fetchUserProfile(),
     fetchPosts(),
@@ -65,6 +66,20 @@ export default async function UpdateTagExample() {
       description="Demonstrates the new updateTag() API for immediate cache invalidation in Server Actions, providing read-your-writes semantics and instant cache updates after mutations."
     >
       <div className="space-y-6">
+        <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+          <div>
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              Rendered at:
+            </span>{" "}
+            <span
+              data-testid="build-timestamp"
+              className="text-gray-900 dark:text-gray-100 font-mono text-sm"
+            >
+              {timestamp}
+            </span>
+          </div>
+        </div>
+
         <InfoCard title="What is updateTag()?">
           <ul className="list-disc list-inside space-y-2 text-sm">
             <li>

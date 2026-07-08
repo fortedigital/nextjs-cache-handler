@@ -11,7 +11,7 @@ export default async function FetchTagsExample() {
 
   try {
     const characterResponse = await fetch(
-      "https://api.sampleapis.com/futurama/characters/1",
+      "https://api.sampleapis.com/futurama/characters/5",
       {
         next: {
           revalidate: 86400,
@@ -121,7 +121,10 @@ export default async function FetchTagsExample() {
                 <span className="font-medium text-gray-700 dark:text-gray-300">
                   Rendered at:
                 </span>{" "}
-                <span className="text-gray-900 dark:text-gray-100 font-mono text-sm">
+                <span
+                  data-testid="build-timestamp"
+                  className="text-gray-900 dark:text-gray-100 font-mono text-sm"
+                >
                   {timestamp}
                 </span>
               </div>
@@ -151,7 +154,7 @@ export default async function FetchTagsExample() {
           </h2>
           <CodeBlock>
             {`const response = await fetch(
-  "https://api.sampleapis.com/futurama/characters/1",
+  "https://api.sampleapis.com/futurama/characters/5",
   {
     next: {
       revalidate: 86400,

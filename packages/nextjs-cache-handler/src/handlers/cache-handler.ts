@@ -3,6 +3,7 @@ import path from "node:path";
 import type { CacheHandler as NextCacheHandler } from "next/dist/server/lib/incremental-cache";
 import { createValidatedAgeEstimationFunction } from "../helpers/createValidatedAgeEstimationFunction";
 import { getTagsFromHeaders } from "../helpers/getTagsFromHeaders";
+import { getImplicitPathTag } from "../helpers/getImplicitPathTag";
 import {
   CacheHandlerValue,
   FileSystemCacheContext,
@@ -787,6 +788,13 @@ export class CacheHandler implements NextCacheHandler {
     switch (value?.kind) {
       case "APP_PAGE": {
         cacheHandlerValueTags = getTagsFromHeaders(value.headers ?? {});
+        break;
+      }
+      case "PAGES": {
+        const pathTag = getImplicitPathTag(cacheKey);
+        cacheHandlerValueTags = cacheHandlerValueTags.includes(pathTag)
+          ? cacheHandlerValueTags
+          : [...cacheHandlerValueTags, pathTag];
         break;
       }
       default: {

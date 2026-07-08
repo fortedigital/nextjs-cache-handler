@@ -212,7 +212,10 @@ export default async function RevalidateTagCacheLifeExample() {
                 <span className="font-medium text-blue-800 dark:text-blue-200">
                   Rendered:
                 </span>{" "}
-                <span className="text-blue-900 dark:text-blue-100 font-mono text-xs">
+                <span
+                  data-testid="build-timestamp"
+                  className="text-blue-900 dark:text-blue-100 font-mono text-xs"
+                >
                   {timestamp}
                 </span>
               </div>

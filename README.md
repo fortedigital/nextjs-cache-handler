@@ -699,6 +699,13 @@ This project uses [Turborepo](https://turbo.build/repo) to manage the monorepo s
 
 - **Start dev server**: `pnpm dev` (runs all dev servers in parallel)
 - **Run all tests**: `pnpm test`
+- **Run e2e tests**: `pnpm test:e2e`
+
+### Running e2e tests
+
+Playwright integration tests live in [`examples/redis-minimal`](examples/redis-minimal). They run the example app in production mode against a real Redis instance and assert cache behavior (tag/path revalidation, including Pages Router).
+
+**Prerequisites:** Redis running locally (default `redis://localhost:6379`).
 
 ---
 
