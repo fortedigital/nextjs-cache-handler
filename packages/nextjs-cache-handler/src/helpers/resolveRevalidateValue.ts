@@ -33,7 +33,14 @@ export function resolveRevalidateValue(
     revalidate = cachedFetchValue.revalidate;
   } else if (
     cachedPageValue?.kind === "APP_PAGE" ||
-    cachedPageValue?.kind === "PAGES"
+    cachedPageValue?.kind === "PAGES" ||
+    // `getStaticProps`/`getServerSideProps` returning `notFound: true` has no
+    // page value to cache, so Next.js calls `set()` with `incrementalCacheValue`
+    // set to `null` (no `kind`). The intended revalidate time still lives on
+    // `ctx.cacheControl.revalidate` in that case, so read it here too instead of
+    // silently falling through to the unpopulated `ctx.revalidate` below and
+    // defaulting to `defaultStaleAge`.
+    cachedPageValue == null
   ) {
     revalidate = responseCacheCtx.cacheControl?.revalidate;
   }
