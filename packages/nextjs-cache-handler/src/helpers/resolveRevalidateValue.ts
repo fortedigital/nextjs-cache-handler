@@ -33,7 +33,8 @@ export function resolveRevalidateValue(
     revalidate = cachedFetchValue.revalidate;
   } else if (
     cachedPageValue?.kind === "APP_PAGE" ||
-    cachedPageValue?.kind === "PAGES"
+    cachedPageValue?.kind === "PAGES" ||
+    cachedPageValue?.kind === "APP_ROUTE"
   ) {
     revalidate = responseCacheCtx.cacheControl?.revalidate;
   }
