@@ -53,7 +53,11 @@ export default function createHandler({
 }: CreateRedisStringsHandlerOptions<
   RedisClientType | RedisClusterCacheAdapter
 >): Handler {
-  const client = withAbortSignalProxy(innerClient);
+  const client =
+    "withAbortSignal" in innerClient &&
+    typeof innerClient.withAbortSignal === "function"
+      ? innerClient
+      : withAbortSignalProxy(innerClient);
   const revalidatedTagsKey = keyPrefix + REVALIDATED_TAGS_KEY;
 
   function assertClientIsReady(): void {
