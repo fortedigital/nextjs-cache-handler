@@ -75,5 +75,4 @@ jobs:
         working-directory: examples/redis-minimal
         run: pnpm exec playwright install chromium --with-deps
       - name: Run isolated registerInitialCache e2e tests
-        working-directory: examples/redis-minimal
         run: pnpm test:e2e:isolated
