@@ -26,6 +26,44 @@ function randomSuffix(): string {
   return Math.random().toString(36).slice(2, 10);
 }
 
+const DEFAULT_CONNECT_ATTEMPT_TIMEOUT_MS = 3_000;
+
+/**
+ * Connects with a hard bound on the attempt, so a single hung TCP handshake
+ * can't swallow an entire retry budget. Needed because right after
+ * `docker run -d -p`, the port's iptables/docker-proxy forwarding rule on
+ * Linux can take a moment to fully wire up - a connection attempt in that
+ * window can hang (no RST, no immediate refusal) rather than fail fast,
+ * which on CI (unlike Docker Desktop on Windows/macOS) has been observed to
+ * outlast a naive retry loop's per-attempt `client.connect()` entirely.
+ */
+async function connectWithTimeout(
+  url: string,
+  attemptTimeoutMs = DEFAULT_CONNECT_ATTEMPT_TIMEOUT_MS,
+) {
+  const client = createClient({ url, socket: { connectTimeout: attemptTimeoutMs } });
+  let timer: NodeJS.Timeout;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(
+      () => reject(new Error(`connect() did not settle within ${attemptTimeoutMs}ms`)),
+      attemptTimeoutMs + 1_000,
+    );
+  });
+  try {
+    await Promise.race([client.connect(), timeout]);
+    return client;
+  } catch (error) {
+    try {
+      client.destroy();
+    } catch {
+      // already torn down - nothing to do
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer!);
+  }
+}
+
 export async function startEphemeralRedis(
   opts: { port?: number; image?: string } = {},
 ): Promise<IsolatedRedis> {
@@ -38,7 +76,8 @@ export async function startEphemeralRedis(
   return { containerName, port, url: `redis://127.0.0.1:${port}` };
 }
 
-export async function stopEphemeralRedis(redis: IsolatedRedis): Promise<void> {
+export async function stopEphemeralRedis(redis: IsolatedRedis | undefined): Promise<void> {
+  if (!redis) return;
   try {
     await exec(`docker rm -f ${redis.containerName}`);
   } catch {
@@ -56,15 +95,16 @@ export async function waitForRedisReady(
 
   let lastError: unknown;
   while (Date.now() < deadline) {
-    const client = createClient({ url });
     try {
-      await client.connect();
-      await client.ping();
-      await client.quit();
+      const client = await connectWithTimeout(url);
+      try {
+        await client.ping();
+      } finally {
+        await client.quit().catch(() => {});
+      }
       return;
     } catch (error) {
       lastError = error;
-      await client.quit().catch(() => {});
       await sleep(intervalMs);
     }
   }
@@ -90,22 +130,30 @@ export async function waitForRedisPopulated(
   const hashKey = opts.hashKey ?? "nextjs:__sharedTags__";
   const deadline = Date.now() + timeoutMs;
 
-  const client = createClient({ url });
-  await client.connect();
-  try {
-    while (Date.now() < deadline) {
-      const results = await Promise.all(
-        expectedCachePaths.map((cachePath) => client.hExists(hashKey, cachePath)),
-      );
-      if (results.every(Boolean)) return;
+  let lastError: unknown;
+  while (Date.now() < deadline) {
+    try {
+      const client = await connectWithTimeout(url);
+      try {
+        while (Date.now() < deadline) {
+          const results = await Promise.all(
+            expectedCachePaths.map((cachePath) => client.hExists(hashKey, cachePath)),
+          );
+          if (results.every(Boolean)) return;
+          await sleep(intervalMs);
+        }
+      } finally {
+        await client.quit().catch(() => {});
+      }
+    } catch (error) {
+      lastError = error;
       await sleep(intervalMs);
     }
-    throw new Error(
-      `Redis hash "${hashKey}" did not contain all expected cache paths (${expectedCachePaths.join(", ")}) after ${timeoutMs}ms`,
-    );
-  } finally {
-    await client.quit();
   }
+
+  throw new Error(
+    `Redis hash "${hashKey}" did not contain all expected cache paths (${expectedCachePaths.join(", ")}) after ${timeoutMs}ms: ${String(lastError)}`,
+  );
 }
 
 export async function startIsolatedNextServer(opts: {
@@ -163,7 +211,10 @@ export async function waitForHttpReady(
   throw new Error(`Server at ${baseURL} was not ready after ${timeoutMs}ms: ${String(lastError)}`);
 }
 
-export async function stopIsolatedNextServer(server: IsolatedNextServer): Promise<void> {
+export async function stopIsolatedNextServer(
+  server: IsolatedNextServer | undefined,
+): Promise<void> {
+  if (!server) return;
   const { process: child } = server;
   if (child.exitCode !== null || child.pid === undefined) return;
 
