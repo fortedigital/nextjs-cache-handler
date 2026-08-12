@@ -173,6 +173,17 @@ export async function registerInitialCache(
     dev: process.env.NODE_ENV === "development",
   };
 
+  const concurrency = options.parallelism ?? Math.max(4, os.availableParallelism());
+
+  // Two separate limiters sharing the same concurrency budget. Route-level
+  // tasks (below) call into setPageCache, which itself needs to bound
+  // per-segment file reads — nesting calls to a single shared pLimit
+  // instance here would deadlock, since a route task occupies one of the
+  // limiter's slots while awaiting segment reads queued behind it on the
+  // very same limiter.
+  const limit = pLimit(concurrency);
+  const segmentReadLimit = pLimit(concurrency);
+
   let cacheHandler: InstanceType<CacheHandlerType>;
 
   try {
@@ -396,17 +407,26 @@ export async function registerInitialCache(
       ) {
         const segmentsDir = `${pathToRouteFiles}.segments`;
         const entries = await Promise.all(
-          meta.segmentPaths.map(async (segmentPath) => {
-            try {
-              const buf = await fsPromises.readFile(
-                segmentsDir + segmentPath + ".segment.rsc",
-              );
-              return [segmentPath, buf] as [string, Buffer];
-            } catch {
-              // Segment file absent — skip silently (not all builds produce every segment).
-              return null;
-            }
-          }),
+          meta.segmentPaths.map((segmentPath) =>
+            segmentReadLimit(async () => {
+              try {
+                const buf = await fsPromises.readFile(
+                  segmentsDir + segmentPath + ".segment.rsc",
+                );
+                return [segmentPath, buf] as [string, Buffer];
+              } catch (error) {
+                if (debug) {
+                  console.warn(
+                    "[CacheHandler] [%s] %s %s",
+                    "registerInitialCache",
+                    `Failed to read segment file for "${segmentPath}", assuming it does not exist`,
+                    `Error: ${error}`,
+                  );
+                }
+                return null;
+              }
+            }),
+          ),
         );
         const validEntries = entries.filter(
           (e): e is [string, Buffer] => e !== null,
@@ -458,12 +478,6 @@ export async function registerInitialCache(
       return;
     }
   }
-
-  // We either take a user-supplied parallelism value or use the default value
-  // of 4 or os.availableParallelism(), whichever is higher.
-  const limit = pLimit(
-    options.parallelism ?? Math.max(4, os.availableParallelism()),
-  );
 
   const promises = Object.entries(prerenderManifest.routes).map(
     ([cachePath, { dataRoute, initialRevalidateSeconds }]) =>
