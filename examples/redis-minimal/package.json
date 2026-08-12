@@ -11,7 +11,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:isolated": "playwright test --config=playwright.isolated.config.ts"
   },
   "dependencies": {
     "@fortedigital/nextjs-cache-handler": "workspace:*",

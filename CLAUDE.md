@@ -75,6 +75,7 @@ Each handler is a factory function returning an object matching the `Handler` in
 
 - Unit tests are colocated with source as `*.test.ts` under `packages/nextjs-cache-handler/src/` (jest + ts-jest, `testEnvironment: "node"`).
 - E2E tests live in `examples/redis-minimal/e2e` (Playwright) and exercise real caching behavior (fetch tag revalidation, ISR, `unstable_cache`, static params, etc.) against a built Next.js app backed by Redis — run via `pnpm test:e2e` from the root, which builds first (`test:e2e` depends on `^build`/`build` per `turbo.json`).
+- A separate isolated suite under `examples/redis-minimal/e2e/isolated` (its own `playwright.isolated.config.ts`, run via `pnpm test:e2e:isolated`, **requires Docker**) proves `registerInitialCache` populates Redis from build-time artifacts on server boot. Each spec self-manages its own ephemeral Redis container and `next start` process — independent of the shared suite's server/Redis — so it can assert Redis state before any HTTP request is made.
 - Use the `new-example` skill (`.claude/skills/new-example/SKILL.md`) to scaffold a new caching example page in `examples/redis-minimal`, and the `new-e2e-test` skill (`.claude/skills/new-e2e-test/SKILL.md`) to add its Playwright coverage. These are commonly used together — a new example is only complete once it has e2e coverage proving the cache behavior it demonstrates, and writing that coverage needs page-specific facts (path, tags, `cacheLife` profile, expected reload behavior) that only whoever built the example page knows.
 
 ## Legacy project docs

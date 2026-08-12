@@ -20,6 +20,10 @@
     "test:e2e": {
       "dependsOn": ["^build", "build"],
       "cache": false
+    },
+    "test:e2e:isolated": {
+      "dependsOn": ["^build", "build"],
+      "cache": false
     }
   }
 }

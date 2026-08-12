@@ -21,3 +21,6 @@ dist
 *.swp
 *.swo
 
+
+examples/redis-minimal/test-results/
+packages/nextjs-cache-handler/test-results/

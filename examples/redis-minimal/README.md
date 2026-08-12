@@ -266,6 +266,24 @@ REDIS_URL=redis://localhost:6379 pnpm test:e2e
 
 From repo root, Turborepo runs `build` first (cached when unchanged) then Playwright e2e. Playwright starts `next start` on port 3000 (`reuseExistingServer` when not in CI).
 
+### Isolated `registerInitialCache` e2e tests
+
+`e2e/isolated/` is a separate Playwright suite (its own config, `playwright.isolated.config.ts`)
+that proves `registerInitialCache` actually populates Redis from build-time artifacts on server
+startup. It doesn't use the shared `webServer`/Redis above — each spec spins up its own ephemeral
+Redis container (via the `docker` CLI) and its own `next start` process on dedicated ports, so it
+can assert Redis state that can only be explained by `registerInitialCache` having run, before any
+HTTP request is made.
+
+**Requires Docker** to be running locally (the tests spawn `docker run redis:7-alpine`
+themselves - no need to start a container manually). Requires a prior `pnpm build` (reuses the
+same `.next` output as the main suite).
+
+```bash
+pnpm build
+pnpm test:e2e:isolated
+```
+
 ## Technologies
 
 - Next.js 16
