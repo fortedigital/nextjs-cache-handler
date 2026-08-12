@@ -2,12 +2,18 @@ import { expect, type APIRequestContext, type Page } from '@playwright/test';
 
 export const BUILD_TIMESTAMP_TEST_ID = 'build-timestamp';
 
-export async function getBuildTimestamp(page: Page) {
-  return page.getByTestId(BUILD_TIMESTAMP_TEST_ID).first().textContent();
+export async function getBuildTimestamp(
+  page: Page,
+  testId: string = BUILD_TIMESTAMP_TEST_ID,
+) {
+  return page.getByTestId(testId).first().textContent();
 }
 
-export async function waitForBuildTimestamp(page: Page) {
-  await expect(page.getByTestId(BUILD_TIMESTAMP_TEST_ID).first()).not.toBeEmpty();
+export async function waitForBuildTimestamp(
+  page: Page,
+  testId: string = BUILD_TIMESTAMP_TEST_ID,
+) {
+  await expect(page.getByTestId(testId).first()).not.toBeEmpty();
 }
 
 export async function revalidatePath(

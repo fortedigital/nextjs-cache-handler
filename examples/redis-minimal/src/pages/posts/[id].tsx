@@ -46,7 +46,9 @@ export default function Post({ post }: PostPageProps) {
       <h1>{post.title}</h1>
       <p>{post.content}</p>
       <p>
-        <small>Generated at: {post.timestamp}</small>
+        <small>
+          Generated at: <span data-testid="build-timestamp">{post.timestamp}</span>
+        </small>
       </p>
     </div>
   );

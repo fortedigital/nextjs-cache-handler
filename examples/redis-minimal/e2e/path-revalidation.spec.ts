@@ -373,4 +373,31 @@ test.describe('Pages Router', () => {
       expect(await getBuildTimestamp(page)).not.toBe(first);
     });
   });
+
+  test('/posts/1 (getStaticPaths fallback: false)', async ({
+    page,
+    request,
+  }) => {
+    const path = '/posts/1';
+    let first: string | null;
+
+    await test.step('Load page and capture build timestamp', async () => {
+      await page.goto(path);
+      await waitForBuildTimestamp(page);
+      first = await getBuildTimestamp(page);
+    });
+
+    await test.step('Immediate reload keeps timestamp (on-demand ISR)', async () => {
+      await page.reload();
+      await waitForBuildTimestamp(page);
+      expect(await getBuildTimestamp(page)).toBe(first);
+    });
+
+    await test.step('revalidatePath updates timestamp on reload', async () => {
+      await revalidatePath(request, path);
+      await page.reload();
+      await waitForBuildTimestamp(page);
+      expect(await getBuildTimestamp(page)).not.toBe(first);
+    });
+  });
 });

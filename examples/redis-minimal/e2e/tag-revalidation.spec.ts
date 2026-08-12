@@ -123,25 +123,26 @@ test('/examples/revalidate-tag-cachelife revalidates via tag "cachelife-hours"',
 }) => {
   const path = '/examples/revalidate-tag-cachelife';
   const tag = 'cachelife-hours';
+  const testId = 'build-timestamp-hours';
   let first: string | null;
 
   await test.step('Load page and capture build timestamp', async () => {
     await page.goto(path);
-    await waitForBuildTimestamp(page);
-    first = await getBuildTimestamp(page);
+    await waitForBuildTimestamp(page, testId);
+    first = await getBuildTimestamp(page, testId);
   });
 
   await test.step('Reload without revalidation keeps timestamp', async () => {
     await page.reload();
-    await waitForBuildTimestamp(page);
-    expect(await getBuildTimestamp(page)).toBe(first);
+    await waitForBuildTimestamp(page, testId);
+    expect(await getBuildTimestamp(page, testId)).toBe(first);
   });
 
   await test.step('revalidateTag updates timestamp on reload', async () => {
     await revalidateTag(request, tag);
     await page.reload();
-    await waitForBuildTimestamp(page);
-    expect(await getBuildTimestamp(page)).not.toBe(first);
+    await waitForBuildTimestamp(page, testId);
+    expect(await getBuildTimestamp(page, testId)).not.toBe(first);
   });
 });
 
@@ -151,24 +152,25 @@ test('/examples/revalidate-tag-cachelife revalidates via tag "cachelife-days"', 
 }) => {
   const path = '/examples/revalidate-tag-cachelife';
   const tag = 'cachelife-days';
+  const testId = 'build-timestamp-days';
   let first: string | null;
 
   await test.step('Load page and capture build timestamp', async () => {
     await page.goto(path);
-    await waitForBuildTimestamp(page);
-    first = await getBuildTimestamp(page);
+    await waitForBuildTimestamp(page, testId);
+    first = await getBuildTimestamp(page, testId);
   });
 
   await test.step('Reload without revalidation keeps timestamp', async () => {
     await page.reload();
-    await waitForBuildTimestamp(page);
-    expect(await getBuildTimestamp(page)).toBe(first);
+    await waitForBuildTimestamp(page, testId);
+    expect(await getBuildTimestamp(page, testId)).toBe(first);
   });
 
   await test.step('revalidateTag updates timestamp on reload', async () => {
     await revalidateTag(request, tag);
     await page.reload();
-    await waitForBuildTimestamp(page);
-    expect(await getBuildTimestamp(page)).not.toBe(first);
+    await waitForBuildTimestamp(page, testId);
+    expect(await getBuildTimestamp(page, testId)).not.toBe(first);
   });
 });
