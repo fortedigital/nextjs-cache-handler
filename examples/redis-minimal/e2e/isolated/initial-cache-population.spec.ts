@@ -28,6 +28,18 @@ test.describe("registerInitialCache populates Redis on boot (setOnlyIfNotExists=
     redis = await startEphemeralRedis();
     await waitForRedisReady(redis.url);
 
+    // Precondition: Redis must be genuinely empty before `next start` boots,
+    // so the population assertions below can only be explained by
+    // registerInitialCache - not by stale data left over in the container.
+    const preCheckClient = createClient({ url: redis.url });
+    await preCheckClient.connect();
+    try {
+      const dbSize = await preCheckClient.dbSize();
+      expect(dbSize).toBe(0);
+    } finally {
+      await preCheckClient.quit();
+    }
+
     server = await startIsolatedNextServer({
       env: { REDIS_URL: redis.url, REDIS_TYPE: "redis" },
     });
