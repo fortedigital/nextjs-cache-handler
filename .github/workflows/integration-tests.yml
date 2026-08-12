@@ -35,11 +35,45 @@ jobs:
             ${{ runner.os }}-turbo-integration-${{ hashFiles('pnpm-lock.yaml') }}-
             ${{ runner.os }}-turbo-integration-
       - run: pnpm install --frozen-lockfile
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Install Playwright browsers
         working-directory: examples/redis-minimal
         run: pnpm exec playwright install chromium --with-deps
       - name: Run e2e tests
         run: pnpm test:e2e
+
+  redis-minimal-e2e-isolated:
+    runs-on: ubuntu-latest
+    env:
+      CI: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: pnpm
+      - name: Cache Turborepo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-integration-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-integration-${{ hashFiles('pnpm-lock.yaml') }}-
+            ${{ runner.os }}-turbo-integration-
+      - run: pnpm install --frozen-lockfile
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Install Playwright browsers
+        working-directory: examples/redis-minimal
+        run: pnpm exec playwright install chromium --with-deps
       - name: Run isolated registerInitialCache e2e tests
         working-directory: examples/redis-minimal
         run: pnpm test:e2e:isolated
