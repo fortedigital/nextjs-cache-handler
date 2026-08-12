@@ -1,6 +1,7 @@
 import { spawn, exec as execCallback, type ChildProcess } from "node:child_process";
 import { promisify } from "node:util";
 import path from "node:path";
+import net from "node:net";
 import { createClient } from "redis";
 
 const exec = promisify(execCallback);
@@ -24,6 +25,32 @@ function sleep(ms: number): Promise<void> {
 
 function randomSuffix(): string {
   return Math.random().toString(36).slice(2, 10);
+}
+
+/**
+ * Allocates a genuinely free OS-assigned port, rather than reusing a fixed
+ * default across every spec file. Sharing a fixed port (e.g. always 16380)
+ * caused a real flake: when one file's `beforeAll` starts a fresh container
+ * on that port at nearly the same moment the *previous* file's `afterAll` is
+ * `docker rm -f`-ing its own container off the same port, a client can land
+ * on the old container mid-teardown and get `ECONNRESET`. Unique ports per
+ * call eliminate this race entirely instead of trying to tighten the timing.
+ */
+function getFreePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const probe = net.createServer();
+    probe.unref();
+    probe.on("error", reject);
+    probe.listen(0, () => {
+      const address = probe.address();
+      if (address && typeof address === "object") {
+        const port = address.port;
+        probe.close(() => resolve(port));
+      } else {
+        probe.close(() => reject(new Error("Could not determine a free port")));
+      }
+    });
+  });
 }
 
 const DEFAULT_CONNECT_ATTEMPT_TIMEOUT_MS = 3_000;
@@ -67,7 +94,7 @@ async function connectWithTimeout(
 export async function startEphemeralRedis(
   opts: { port?: number; image?: string } = {},
 ): Promise<IsolatedRedis> {
-  const port = opts.port ?? 16380;
+  const port = opts.port ?? (await getFreePort());
   const image = opts.image ?? "redis:7-alpine";
   const containerName = `nca-e2e-redis-${randomSuffix()}`;
 
@@ -191,7 +218,7 @@ export async function startIsolatedNextServer(opts: {
   cwd?: string;
   env: Record<string, string>;
 }): Promise<IsolatedNextServer> {
-  const port = opts.port ?? 3010;
+  const port = opts.port ?? (await getFreePort());
   const cwd = opts.cwd ?? path.resolve(__dirname, "..", "..", "..");
 
   const child = spawn(`pnpm exec next start --port ${port}`, [], {
