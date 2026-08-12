@@ -7,6 +7,10 @@ on:
     branches: [master]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  checks: write
+
 jobs:
   redis-minimal-e2e:
     runs-on: ubuntu-latest
@@ -45,6 +49,13 @@ jobs:
         run: pnpm exec playwright install chromium --with-deps
       - name: Run e2e tests
         run: pnpm test:e2e
+      - name: E2E Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: E2E Test Report
+          path: examples/redis-minimal/test-results/junit-e2e.xml
+          reporter: java-junit
 
   redis-minimal-e2e-isolated:
     runs-on: ubuntu-latest
@@ -76,3 +87,10 @@ jobs:
         run: pnpm exec playwright install chromium --with-deps
       - name: Run isolated registerInitialCache e2e tests
         run: pnpm test:e2e:isolated
+      - name: Isolated E2E Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Isolated E2E Test Report
+          path: examples/redis-minimal/test-results/junit-e2e-isolated.xml
+          reporter: java-junit

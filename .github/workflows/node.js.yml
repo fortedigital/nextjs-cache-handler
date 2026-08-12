@@ -7,13 +7,17 @@ on:
     branches: [ "master" ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  checks: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ./packages/nextjs-cache-handler
-        
+
     steps:
     - uses: actions/checkout@v4
     - uses: pnpm/action-setup@v4
@@ -25,3 +29,10 @@ jobs:
     - run: pnpm install --frozen-lockfile
     - run: npm run build --if-present
     - run: npm test
+    - name: Unit Test Report
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Unit Test Report
+        path: packages/nextjs-cache-handler/test-results/junit.xml
+        reporter: jest-junit

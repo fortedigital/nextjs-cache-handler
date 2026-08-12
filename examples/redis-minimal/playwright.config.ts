@@ -11,7 +11,9 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: process.env.CI ? 2 : 0,
-  reporter: process.env.CI ? "github" : "list",
+  reporter: process.env.CI
+    ? [["github"], ["junit", { outputFile: "test-results/junit-e2e.xml" }]]
+    : "list",
   use: {
     baseURL,
     trace: "on-first-retry",

@@ -5,7 +5,9 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? "github" : "list",
+  reporter: process.env.CI
+    ? [["github"], ["junit", { outputFile: "test-results/junit-e2e-isolated.xml" }]]
+    : "list",
   // Container start + `next start` boot needs more headroom than the default,
   // plus slack for a cold `docker pull` on a fresh CI runner where the image
   // isn't cached yet.
