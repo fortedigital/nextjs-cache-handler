@@ -48,6 +48,10 @@ export type CreateRedisStringsHandlerOptions<
    *
    * @remarks
    * To disable timeout of Redis operations, set this option to 0.
+   * With clients that provide native abort support, queued commands that have not
+   * been written to the socket are cancelled. Commands already written to the
+   * socket cannot be cancelled. For other clients, the timeout only stops waiting
+   * for the result; the underlying command continues to run.
    */
   timeoutMs?: number;
   /**
