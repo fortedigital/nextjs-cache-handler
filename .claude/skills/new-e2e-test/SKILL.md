@@ -121,10 +121,35 @@ there.
 
 See `e2e/isolated/` and `playwright.isolated.config.ts` instead: specs there self-manage a Docker
 Redis container and a `next start` child process via `e2e/isolated/helpers/isolated-server.ts`
-(`startEphemeralRedis`/`waitForRedisReady`/`waitForRedisPopulated`/`startIsolatedNextServer`/
-`stopIsolatedNextServer`), run via `pnpm test:e2e:isolated` (requires Docker). Key lesson from
-building this suite: don't synchronize on "the shared-tags hash has *any* entries" — routes are
-written under `registerInitialCache`'s own internal concurrency limit, so an early partial write
-can pass an `HLEN > 0` check while routes your test cares about are still being written. Wait for
-the *specific* cache paths the test asserts on (`waitForRedisPopulated`'s `expectedCachePaths`
-argument) rather than a generic non-empty check.
+(`startEphemeralRedis`/`waitForRedisReady`/`waitForRedisPopulated`/`waitForRedisKeyDeleted`/
+`startIsolatedNextServer`/`stopIsolatedNextServer`), run via `pnpm test:e2e:isolated` (requires
+Docker). Key lessons from building this suite:
+- Don't synchronize on "the shared-tags hash has *any* entries" — routes are written under
+  `registerInitialCache`'s own internal concurrency limit, so an early partial write can pass an
+  `HLEN > 0` check while routes your test cares about are still being written. Wait for the
+  *specific* cache paths the test asserts on (`waitForRedisPopulated`'s `expectedCachePaths`
+  argument) rather than a generic non-empty check.
+- Next's own `revalidateTag()`/`revalidatePath()` don't guarantee the underlying `CacheHandler`
+  purge completes synchronously with the HTTP response that triggered it — asserting on Redis
+  immediately after such a response is flaky (confirmed empirically). Poll with
+  `waitForRedisKeyDeleted` (or similar) instead of asserting once.
+
+### Two styles of isolated test — pick deliberately
+
+- **Boot `next start`** (`startIsolatedNextServer`) — needed to prove something about the *whole
+  pipeline*: `registerInitialCache`'s disk-to-Redis population, `setOnlyIfNotExists`, or that a
+  real HTTP route (`/api/revalidate`) actually mutates Redis. Slower (real build + boot), but the
+  only way to exercise the real `CacheHandler`'s kind-based tag computation
+  (`APP_PAGE`/`PAGES`/`FETCH`) against real Next.js-generated values.
+- **Direct handler construction** (no `next start` at all) — for handler-level correctness that
+  doesn't depend on Next.js's runtime: import `createRedisHandler` from
+  `@fortedigital/nextjs-cache-handler/redis-strings` directly (the same public subpath export
+  `examples/redis-minimal/cache-handler.mjs` uses in production — not a private API) and call
+  `.set()`/`.revalidateTag()`/`.prepare()` on it against the ephemeral Redis client directly. Gives
+  full deterministic control over arbitrary tags/`lifespan`/`revalidate` shapes and entry counts —
+  essential for a *matrix* of scenarios the fixed example-app routes can't cleanly provide (e.g.
+  every `revalidate` value, a `lifespan: null` permanent-key case that's unreachable via any real
+  route under `next start`) — and it's fast, since there's no Next.js process to boot. See
+  `redis-handler-tags-and-ttl.spec.ts` and `redis-handler-revalidate-tag.spec.ts` for the pattern:
+  one shared ephemeral Redis per file (`beforeAll`/`afterAll`), a distinct `keyPrefix` per test to
+  keep them fully isolated from each other without paying for a separate container each time.
