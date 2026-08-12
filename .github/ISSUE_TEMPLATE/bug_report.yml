@@ -1,0 +1,138 @@
+name: Bug report
+description: Report a problem with @fortedigital/nextjs-cache-handler
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a problem. Before filing:
+
+        - **The fastest way to get a bug fixed is to open a pull request that fixes it**, ideally with a regression test (unit and/or e2e). This is a small, maintainer-bandwidth-limited project - a well-described report can sit in the queue for a while, but a PR with a fix and a test gets reviewed and merged much faster. If you're able to, please consider fixing it yourself and opening a PR instead of (or in addition to) this issue. See `CLAUDE.md` / the README for how to run the test suite and the example apps.
+        - If you have a **question** about usage/configuration rather than something that's broken, please use the "Question" issue template instead - it keeps this one focused on actionable bugs.
+        - Please reproduce against the **unmodified `examples/redis-minimal` app** if you can. A lot of back-and-forth on past issues came from bugs that only existed in someone's heavily customized cache-handler config (custom locks, wrappers, serializers, etc.). Isolating whether the bug exists in the plain example saves everyone time - but if you can't spare that, a report without it is still welcome, just fill in as much below as you reasonably can.
+        - This package was forked from [`@neshca/cache-handler`](https://github.com/caching-tools/next-shared-cache) and inherited most of its behavior (TTL/tag model, handler interface, etc.). If what you're seeing matches a documented behavior of that project rather than something specific to this fork, the [neshca docs](https://caching-tools.github.io/next-shared-cache/) may explain it - worth a quick check first.
+
+  - type: checkboxes
+    attributes:
+      label: Preflight checklist
+      options:
+        - label: I searched existing issues and didn't find a duplicate.
+          required: true
+        - label: This is a bug report, not a usage question (usage questions should use the "Question" template).
+          required: true
+
+  - type: input
+    id: package-version
+    attributes:
+      label: "@fortedigital/nextjs-cache-handler version"
+      description: e.g. 3.3.0 (run `npm ls @fortedigital/nextjs-cache-handler` if unsure)
+      placeholder: "3.3.0"
+    validations:
+      required: true
+
+  - type: input
+    id: nextjs-version
+    attributes:
+      label: Next.js version
+      description: e.g. 16.3.0. Note if it's a canary build.
+      placeholder: "16.3.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro-steps
+    attributes:
+      label: Steps to reproduce
+      description: |
+        What you did and what happened. Ideally against `examples/redis-minimal` (`npm run build && npm run start` - caching only activates in a production build), but your own app is fine too if that's easier for you.
+      placeholder: |
+        1. In examples/redis-minimal, visit /some-page
+        2. Wait for revalidate window to pass
+        3. Call revalidateTag("...")
+        4. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-actual
+    attributes:
+      label: Expected vs. actual behavior
+    validations:
+      required: true
+
+  - type: dropdown
+    id: router
+    attributes:
+      label: Router / caching mode in use
+      description: Optional, but helpful - Next.js 16 has two separate cache configuration surfaces, so this narrows down where the bug likely is.
+      multiple: true
+      options:
+        - App Router (default cacheHandler - ISR / fetch / route handlers)
+        - Pages Router
+        - "Cache Components / \"use cache\" (cacheHandlers, plural)"
+        - PPR (Partial Prerendering)
+        - Not sure
+
+  - type: dropdown
+    id: handlers
+    attributes:
+      label: Which handler(s) from this package are configured?
+      description: Optional.
+      multiple: true
+      options:
+        - redis-strings (node-redis client)
+        - redis-strings via ioredisAdapter
+        - redis-strings via redisClusterAdapter
+        - local-lru
+        - composite
+        - Other / not sure
+
+  - type: input
+    id: env-versions
+    attributes:
+      label: Redis / ioredis / Node.js versions
+      description: "Optional. e.g. \"redis@5.1.1, Redis Server 7.2, Node 22.19.0\""
+
+  - type: dropdown
+    id: topology
+    attributes:
+      label: Deployment topology
+      description: Optional, but useful if this looks like a race condition, hit-rate, or stale-cache issue - those are often topology-dependent.
+      options:
+        - Single instance / single pod
+        - Multiple instances or pods sharing one Redis (e.g. Kubernetes with N replicas)
+        - Serverless (per-invocation instances)
+        - Vercel
+        - Local dev / not deployed
+        - Other (describe in reproduction steps)
+
+  - type: textarea
+    id: cache-handler-config
+    attributes:
+      label: cache-handler.mjs / .ts configuration
+      description: Optional, but if you're using non-default options or any custom wrapper code around the handler (locks, intervals, custom serializers, etc.), pasting it here can save a round trip - a good chunk of past reports turned out to be interactions with surrounding custom code rather than the library itself. Redact secrets.
+      render: typescript
+
+  - type: dropdown
+    id: repro-on-example
+    attributes:
+      label: Does this reproduce on the unmodified examples/redis-minimal app?
+      description: Optional.
+      options:
+        - "Yes - reproduces on examples/redis-minimal as-is"
+        - "No - only reproduces in my own app (explain any relevant differences above)"
+        - "Haven't tried yet"
+
+  - type: textarea
+    id: debug-logs
+    attributes:
+      label: Debug logs
+      description: Optional. Re-run with `NEXT_PRIVATE_DEBUG_CACHE=1` set and paste the relevant `[CacheHandler]` log lines - this is often the first thing that gets asked for, so including it up front can skip a round trip.
+      render: text
+
+  - type: checkboxes
+    id: pr-intent
+    attributes:
+      label: Contribution
+      options:
+        - label: I'm willing to open a pull request with a fix for this.

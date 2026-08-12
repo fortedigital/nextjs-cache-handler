@@ -1,0 +1,31 @@
+name: Question
+description: Ask about usage, configuration, or how something is supposed to work
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a "how do I configure X" or "is Y possible" question rather than a broken behavior to report? This is the right place. If it turns out to be a bug, we'll relabel it.
+
+        This package was forked from [`@neshca/cache-handler`](https://github.com/caching-tools/next-shared-cache) and inherited most of its handler interface, tag/TTL model, and general caching approach. If your question is about general concepts (TTL/`estimateExpireAge` behavior, populating the cache on start, tag revalidation semantics, etc.) rather than something specific to this fork, the [neshca docs](https://caching-tools.github.io/next-shared-cache/) may already have your answer - worth a quick check before posting.
+
+  - type: checkboxes
+    attributes:
+      label: Preflight checklist
+      options:
+        - label: I searched existing issues and didn't find an answer.
+          required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Relevant context
+      description: Optional - package/Next.js version, handler(s) in use, or a snippet of your cache-handler config, if relevant to the question.
+      render: typescript

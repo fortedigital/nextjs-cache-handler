@@ -1,0 +1,44 @@
+name: Feature request
+description: Propose a new feature, handler, or capability
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is a small, maintainer-bandwidth-limited project - new features move fastest when proposed with a concrete approach, and fastest of all when there's a draft PR attached. If you're able to prototype it, consider opening a draft PR alongside (or instead of) this issue so the discussion can happen against real code.
+
+  - type: checkboxes
+    attributes:
+      label: Preflight checklist
+      options:
+        - label: I searched existing issues/PRs and didn't find an existing request or implementation attempt.
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: What are you trying to do, and what currently stops you? (Not "add X" - the underlying need.)
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How you'd imagine this working - new handler, new option, config shape, etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives / workarounds considered
+      description: Optional. Anything you've already tried, or prior art elsewhere (e.g. how another cache-handler package does it).
+
+  - type: checkboxes
+    id: pr-intent
+    attributes:
+      label: Contribution
+      options:
+        - label: I'm willing to implement this and open a PR.
