@@ -40,3 +40,6 @@ jobs:
         run: pnpm exec playwright install chromium --with-deps
       - name: Run e2e tests
         run: pnpm test:e2e
+      - name: Run isolated registerInitialCache e2e tests
+        working-directory: examples/redis-minimal
+        run: pnpm test:e2e:isolated

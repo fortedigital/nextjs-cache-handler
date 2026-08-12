@@ -108,3 +108,23 @@ cd examples/redis-minimal && npx playwright test <file>.spec.ts   # single file,
 
 Requires a reachable Redis at `REDIS_URL` (defaults to `redis://127.0.0.1:6379`) — start one
 locally (e.g. `docker run -p 6379:6379 redis`) before running e2e tests outside CI.
+
+## Isolated tests (own Redis + own server)
+
+If a test needs to assert against Redis state independent of the shared `next start`/Redis used
+by the rest of this suite — e.g. proving something that happens exactly once at server boot,
+before any HTTP request, such as `registerInitialCache` populating Redis from build-time
+artifacts — it does **not** belong in `e2e/*.spec.ts` under the shared `playwright.config.ts`. By
+the time any of those specs run, the shared server has been up for a while and its Redis has
+already been mutated by earlier HTTP-driven cache writes, so "before any request" can't be proven
+there.
+
+See `e2e/isolated/` and `playwright.isolated.config.ts` instead: specs there self-manage a Docker
+Redis container and a `next start` child process via `e2e/isolated/helpers/isolated-server.ts`
+(`startEphemeralRedis`/`waitForRedisReady`/`waitForRedisPopulated`/`startIsolatedNextServer`/
+`stopIsolatedNextServer`), run via `pnpm test:e2e:isolated` (requires Docker). Key lesson from
+building this suite: don't synchronize on "the shared-tags hash has *any* entries" — routes are
+written under `registerInitialCache`'s own internal concurrency limit, so an early partial write
+can pass an `HLEN > 0` check while routes your test cares about are still being written. Wait for
+the *specific* cache paths the test asserts on (`waitForRedisPopulated`'s `expectedCachePaths`
+argument) rather than a generic non-empty check.

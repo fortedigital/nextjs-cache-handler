@@ -4,6 +4,10 @@ const baseURL = process.env.BASE_URL ?? "http://127.0.0.1:3000";
 
 export default defineConfig({
   testDir: "./e2e",
+  // The isolated suite (./e2e/isolated) manages its own ephemeral Redis
+  // container and `next start` process per spec - it must not run under this
+  // config's shared webServer/Redis. See playwright.isolated.config.ts.
+  testIgnore: ["isolated/**"],
   fullyParallel: false,
   workers: 1,
   retries: process.env.CI ? 2 : 0,

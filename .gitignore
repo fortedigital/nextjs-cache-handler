@@ -21,3 +21,5 @@ dist
 *.swp
 *.swo
 
+
+examples/redis-minimal/test-results/
