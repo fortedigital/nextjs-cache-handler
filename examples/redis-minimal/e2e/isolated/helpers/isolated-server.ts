@@ -156,6 +156,36 @@ export async function waitForRedisPopulated(
   );
 }
 
+/**
+ * Polls Redis until a value key is gone. Needed because Next.js's own
+ * `revalidateTag()`/`revalidatePath()` do not guarantee the underlying
+ * CacheHandler purge completes synchronously with the HTTP response that
+ * triggered it - the actual Redis deletion can land shortly after the
+ * response returns. Confirmed empirically: asserting immediately after a
+ * `POST /api/revalidate` response is flaky; polling is required.
+ */
+export async function waitForRedisKeyDeleted(
+  url: string,
+  key: string,
+  opts: { timeoutMs?: number; intervalMs?: number } = {},
+): Promise<void> {
+  const timeoutMs = opts.timeoutMs ?? 10_000;
+  const intervalMs = opts.intervalMs ?? 200;
+  const deadline = Date.now() + timeoutMs;
+
+  const client = await connectWithTimeout(url);
+  try {
+    while (Date.now() < deadline) {
+      const value = await client.get(key);
+      if (value === null) return;
+      await sleep(intervalMs);
+    }
+    throw new Error(`Redis key "${key}" was still present after ${timeoutMs}ms`);
+  } finally {
+    await client.quit().catch(() => {});
+  }
+}
+
 export async function startIsolatedNextServer(opts: {
   port?: number;
   cwd?: string;

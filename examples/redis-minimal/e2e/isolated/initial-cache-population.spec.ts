@@ -110,4 +110,26 @@ test.describe("registerInitialCache populates Redis on boot (setOnlyIfNotExists=
       await client.quit();
     }
   });
+
+  // Bridges confidence between this real-app-boot proof and the exhaustive,
+  // deterministic TTL matrix in redis-handler-tags-and-ttl.spec.ts: the real
+  // CacheHandler -> registerInitialCache -> redis-strings pipeline must
+  // produce internally-consistent state, not just "a TTL exists somewhere."
+  for (const path of ["/examples/fetch-tags", "/posts/1"]) {
+    test(`real Redis EXPIRETIME agrees with sharedTagsTtlKey for ${path}`, async () => {
+      const client = createClient({ url: redis.url });
+      await client.connect();
+      try {
+        const rawTtl = await client.hGet("nextjs:__sharedTagsTtl__", path);
+        expect(rawTtl).not.toBeNull();
+        const expectedExpireAt = Number(rawTtl);
+
+        const expireTime = await client.expireTime(`nextjs:${path}`);
+        expect(expireTime).toBe(expectedExpireAt);
+        expect(expireTime).toBeGreaterThan(Math.floor(Date.now() / 1000));
+      } finally {
+        await client.quit();
+      }
+    });
+  }
 });
