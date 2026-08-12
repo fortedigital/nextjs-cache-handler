@@ -177,6 +177,11 @@ From version 2.0.0 onward, `@fortedigital/nextjs-cache-handler` is a standalone 
 
 We aim to keep up with new Next.js releases and will introduce major changes with appropriate version bumps.
 
+> [!WARNING]
+> **Next.js 16.3.0 breaking change:** Starting with Next.js 16.3.0, prefetch requests for the app router's route tree (`/_tree`) require per-segment RSC payloads (`segmentData`) to be present in the cache entry. Versions of this package prior to **3.3.0** did not populate `segmentData` when restoring the initial cache from disk (via `registerInitialCache`), which caused the Next.js 16.3.0+ client to receive an unparseable response for `/_tree` prefetch requests and retry indefinitely.
+>
+> **Fixed in 3.3.0.** If you are on Next.js 16.3.0 or later, upgrade to `@fortedigital/nextjs-cache-handler` 3.3.0+.
+
 ### Feature Compatibility Matrix
 
 | Feature                                              | Next.js 15 | Next.js 16 | Notes                                                |
