@@ -23,6 +23,12 @@ type NextRouteMetadata = {
   status: number | undefined;
   headers: OutgoingHttpHeaders | undefined;
   postponed: string | undefined;
+  /**
+   * Segment paths available for this route (Next.js 16+).
+   * Each entry corresponds to a `.segment.rsc` file in the `.segments/` directory
+   * alongside the route's build artefacts (e.g. `/_tree`, `/_full`).
+   */
+  segmentPaths?: string[];
 };
 
 type Router = "pages" | "app";
@@ -375,6 +381,41 @@ export async function registerInitialCache(
 
     try {
       const rscData = prefetchRscData ?? pageData;
+
+      // Load per-segment RSC payloads introduced in Next.js 16.
+      // Each segment path (e.g. `/_tree`, `/_full`) corresponds to a
+      // `<routeKey>.segments<segmentPath>.segment.rsc` file on disk.
+      // Without this data the server falls back to returning the full-page RSC
+      // for `/_tree` prefetch requests, which the Next.js 16 client cannot
+      // parse as a route-tree response and retries indefinitely.
+      let segmentData: Map<string, Buffer> | undefined;
+      if (
+        isAppRouter &&
+        Array.isArray(meta?.segmentPaths) &&
+        meta.segmentPaths.length > 0
+      ) {
+        const segmentsDir = `${pathToRouteFiles}.segments`;
+        const entries = await Promise.all(
+          meta.segmentPaths.map(async (segmentPath) => {
+            try {
+              const buf = await fsPromises.readFile(
+                segmentsDir + segmentPath + ".segment.rsc",
+              );
+              return [segmentPath, buf] as [string, Buffer];
+            } catch {
+              // Segment file absent — skip silently (not all builds produce every segment).
+              return null;
+            }
+          }),
+        );
+        const validEntries = entries.filter(
+          (e): e is [string, Buffer] => e !== null,
+        );
+        if (validEntries.length > 0) {
+          segmentData = new Map(validEntries);
+        }
+      }
+
       const value: IncrementalCachedAppPageValue &
         Partial<Pick<IncrementalCachedPageValue, "pageData">> = {
         kind: (isAppRouter ? "APP_PAGE" : "PAGES") as unknown as any,
@@ -387,7 +428,7 @@ export async function registerInitialCache(
           isAppRouter && typeof rscData === "string"
             ? Buffer.from(rscData, "utf-8")
             : undefined,
-        segmentData: undefined, // TODO: Add segment data
+        segmentData,
       };
 
       await cacheHandler.set(cachePath, value, {
