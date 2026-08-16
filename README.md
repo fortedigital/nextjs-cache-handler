@@ -120,8 +120,6 @@ Before installing, ensure you have:
 - **Redis** >= 5.5.6 (or compatible Redis-compatible service)
 - **pnpm** >= 9.0.0 (for development)
 
-> **Important:** This package only supports the official [`redis`](https://github.com/redis/node-redis) package (also known as `node-redis`). The `ioredis` package is **not supported**.
-
 See [Version Requirements](#version-requirements) for package version compatibility.
 
 ## Installation
@@ -226,8 +224,6 @@ We aim to keep up with new Next.js releases and will introduce major changes wit
 ### `redis-strings`
 
 A Redis-based handler for key- and tag-based caching. Compared to the original implementation, it prevents memory leaks caused by growing shared tag maps by implementing TTL-bound hashmaps.
-
-> **Note:** This handler requires the official [`redis`](https://github.com/redis/node-redis) package. `ioredis` is not supported.
 
 **Features:**
 
