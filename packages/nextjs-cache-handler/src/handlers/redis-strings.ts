@@ -26,6 +26,12 @@ export const jsonCacheValueSerializer: CacheValueSerializer = {
   },
 };
 
+const HSET_WITH_EXPIRATION_SCRIPT = `
+local result = redis.call('HSET', KEYS[1], ARGV[1], ARGV[2])
+redis.call('EXPIRE', KEYS[1], ARGV[3])
+return result
+`;
+
 /**
  * Creates a Handler for handling cache operations using Redis strings.
  *
@@ -50,6 +56,7 @@ export default function createHandler({
   keyExpirationStrategy = "EXPIREAT",
   revalidateTagQuerySize = 10_000,
   valueSerializer = jsonCacheValueSerializer,
+  metadataKeysExpirationSeconds,
 }: CreateRedisStringsHandlerOptions<
   RedisClientType | RedisClusterCacheAdapter
 >): Handler {
@@ -60,6 +67,14 @@ export default function createHandler({
       : withAbortSignalProxy(innerClient);
   const revalidatedTagsKey = keyPrefix + REVALIDATED_TAGS_KEY;
 
+  if (
+    metadataKeysExpirationSeconds !== undefined &&
+    (!Number.isSafeInteger(metadataKeysExpirationSeconds) ||
+      metadataKeysExpirationSeconds <= 0)
+  ) {
+    throw new Error("metadataKeysExpirationSeconds must be a positive integer");
+  }
+
   function assertClientIsReady(): void {
     if (!client.isReady) {
       throw new Error(
@@ -68,13 +83,30 @@ export default function createHandler({
     }
   }
 
+  function setMetadataField(
+    key: string,
+    field: string,
+    value: string | number,
+  ) {
+    const commandClient = client.withAbortSignal(
+      AbortSignal.timeout(timeoutMs),
+    );
+
+    if (metadataKeysExpirationSeconds === undefined) {
+      return commandClient.hSet(key, field, value);
+    }
+
+    return commandClient.eval(HSET_WITH_EXPIRATION_SCRIPT, {
+      keys: [key],
+      arguments: [field, String(value), String(metadataKeysExpirationSeconds)],
+    });
+  }
+
   async function revalidateTag(tag: string) {
     assertClientIsReady();
 
     if (isImplicitTag(tag)) {
-      await client
-        .withAbortSignal(AbortSignal.timeout(timeoutMs))
-        .hSet(revalidatedTagsKey, tag, Date.now());
+      await setMetadataField(revalidatedTagsKey, tag, Date.now());
     }
 
     const tagsMap: Map<string, string[]> = new Map();
@@ -263,18 +295,14 @@ export default function createHandler({
         value: valueForStorage,
       });
 
-      const setTagsOperation = client
-        .withAbortSignal(AbortSignal.timeout(timeoutMs))
-        .hSet(
-          keyPrefix + sharedTagsKey,
-          key,
-          JSON.stringify(cacheHandlerValue.tags ?? []),
-        );
+      const setTagsOperation = setMetadataField(
+        keyPrefix + sharedTagsKey,
+        key,
+        JSON.stringify(cacheHandlerValue.tags ?? []),
+      );
 
       const setSharedTtlOperation = lifespan
-        ? client
-            .withAbortSignal(AbortSignal.timeout(timeoutMs))
-            .hSet(keyPrefix + sharedTagsTtlKey, key, lifespan.expireAt)
+        ? setMetadataField(keyPrefix + sharedTagsTtlKey, key, lifespan.expireAt)
         : undefined;
 
       switch (keyExpirationStrategy) {
@@ -329,10 +357,11 @@ export default function createHandler({
       assertClientIsReady();
 
       /*
-       * If the tag is an implicit tag, we need to mark it as revalidated.
-       * The revalidation process is done by the CacheHandler class on the next get operation.
+       * Preserve the existing two-write implicit-tag path when metadata key
+       * expiration is disabled. The private revalidation helper performs the
+       * second write before scanning the shared tag map.
        */
-      if (isImplicitTag(tag)) {
+      if (metadataKeysExpirationSeconds === undefined && isImplicitTag(tag)) {
         await client
           .withAbortSignal(AbortSignal.timeout(timeoutMs))
           .hSet(revalidatedTagsKey, tag, Date.now());

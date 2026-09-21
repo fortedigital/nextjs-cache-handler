@@ -230,6 +230,7 @@ A Redis-based handler for key- and tag-based caching. Compared to the original i
 - Key expiration using `EXAT` or `EXPIREAT`
 - Tag-based revalidation
 - Automatic TTL management
+- Optional inactivity TTL for handler-owned metadata hash keys
 - Automatic buffer/string conversion for Next.js 15+ compatibility (previously required `buffer-string-decorator` in version 1.x.x)
 - Default `revalidateTagQuerySize`: `10_000` (safe for large caches)
 
@@ -245,6 +246,24 @@ const redisHandler = await createRedisHandler({
   sharedTagsTtlKey: "myTagTtls",
 });
 ```
+
+#### Metadata key expiration
+
+`sharedTagsKey`, `sharedTagsTtlKey`, and the internal revalidated-tags hash are
+normally persistent Redis keys. Applications that create isolated cache
+namespaces can give those metadata keys an inactivity TTL:
+
+```js
+const redisHandler = createRedisHandler({
+  client,
+  keyPrefix: "myApp:build-id:",
+  metadataKeysExpirationSeconds: 60 * 60 * 24 * 28,
+});
+```
+
+Each metadata write atomically updates its hash field and refreshes the hash
+key's expiry. Keep this TTL longer than the maximum lifetime of any cache entry
+that depends on the metadata. The option is disabled by default.
 
 #### Custom value serializer
 
