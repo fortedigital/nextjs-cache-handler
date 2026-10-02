@@ -10,6 +10,7 @@ import {
   type IsolatedRedis,
   type IsolatedNextServer,
 } from "./helpers/isolated-server";
+import { cacheKeyFor } from "./helpers/cache-keys";
 
 // Two seeded paths deliberately span different `registerInitialCache` code
 // paths (setPageCache(..., "app", ...) vs setPageCache(..., "pages", ...)) -
@@ -17,8 +18,8 @@ import {
 // register-initial-cache.ts), not something scoped to one specific
 // cachePath, so this proves the NX guard is honored uniformly regardless of
 // router kind, not just for one hardcoded App Router page.
-const SEEDED_APP_ROUTER_CACHE_PATH = "nextjs:/examples/default-cache";
-const SEEDED_PAGES_ROUTER_CACHE_PATH = "nextjs:/posts/1";
+const SEEDED_APP_ROUTER_CACHE_PATH = `nextjs:${cacheKeyFor("/examples/default-cache")}`;
+const SEEDED_PAGES_ROUTER_CACHE_PATH = `nextjs:${cacheKeyFor("/posts/1")}`;
 
 function makeSentinel(label: string) {
   return JSON.stringify({
@@ -57,7 +58,9 @@ test.describe("registerInitialCache with setOnlyIfNotExists=true does not clobbe
 
     await waitForRedisPopulated(
       redis.url,
-      ["/examples/default-cache", "/examples/fetch-tags", "/posts/1"],
+      ["/examples/default-cache", "/examples/fetch-tags", "/posts/1"].map(
+        cacheKeyFor,
+      ),
       { timeoutMs: 60_000 },
     );
   });
@@ -104,7 +107,9 @@ test.describe("registerInitialCache with setOnlyIfNotExists=true does not clobbe
     const client = createClient({ url: redis.url });
     await client.connect();
     try {
-      const value = await client.get("nextjs:/examples/fetch-tags");
+      const value = await client.get(
+        `nextjs:${cacheKeyFor("/examples/fetch-tags")}`,
+      );
       expect(value).not.toBeNull();
     } finally {
       await client.quit();

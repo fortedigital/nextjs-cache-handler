@@ -1,7 +1,12 @@
 import { promises as fsPromises } from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import { PRERENDER_MANIFEST, SERVER_DIRECTORY } from "next/constants.js";
+import {
+  APP_PATH_ROUTES_MANIFEST,
+  PRERENDER_MANIFEST,
+  ROUTES_MANIFEST,
+  SERVER_DIRECTORY,
+} from "next/constants.js";
 import type { PrerenderManifest } from "next/dist/build";
 import {
   CachedFetchValue,
@@ -14,8 +19,19 @@ import { getTagsFromHeaders } from "../helpers/getTagsFromHeaders";
 import { getImplicitPathTag } from "../helpers/getImplicitPathTag";
 import { Revalidate } from "../handlers/cache-handler.types";
 import pLimit from "p-limit";
+import { createRouteCacheKeyResolver } from "../helpers/routeCacheKey";
 
 const CACHE_ONE_YEAR = 31536000;
+
+async function readOptionalJson<T extends object>(
+  filePath: string,
+): Promise<T> {
+  try {
+    return JSON.parse(await fsPromises.readFile(filePath, "utf-8")) as T;
+  } catch {
+    return {} as T;
+  }
+}
 
 type CacheHandlerType = typeof import("../handlers/cache-handler").CacheHandler;
 
@@ -207,6 +223,7 @@ export async function registerInitialCache(
     cachePath: string,
     router: Router,
     revalidate: Revalidate,
+    storageKey: string,
   ) {
     const pathToRouteFiles = path.join(serverDistDir, router, cachePath);
 
@@ -262,7 +279,7 @@ export async function registerInitialCache(
         headers: meta.headers,
         status: meta.status,
       };
-      await cacheHandler.set(cachePath, value, {
+      await cacheHandler.set(storageKey, value, {
         revalidate,
         internal_lastModified: lastModified,
         tags: getTagsFromHeaders(meta.headers),
@@ -286,6 +303,7 @@ export async function registerInitialCache(
     cachePath: string,
     router: Router,
     revalidate: Revalidate,
+    storageKey: string,
   ) {
     const isAppRouter = router === "app";
 
@@ -451,7 +469,7 @@ export async function registerInitialCache(
         segmentData,
       };
 
-      await cacheHandler.set(cachePath, value, {
+      await cacheHandler.set(storageKey, value, {
         revalidate,
         internal_lastModified: lastModified,
         setOnlyIfNotExists: setOnlyIfNotExists,
@@ -479,15 +497,47 @@ export async function registerInitialCache(
     }
   }
 
+  // Next.js 16.3.8+ looks response-cache entries up under route-scoped keys
+  // instead of pathnames; write them where Next.js will read them. Older
+  // versions get `undefined` here and keep pathname keys.
+  const resolveStorageKey = createRouteCacheKeyResolver(
+    prerenderManifest.routes,
+    await readOptionalJson<Record<string, string>>(
+      path.join(nextJsPath, APP_PATH_ROUTES_MANIFEST),
+    ),
+    (
+      await readOptionalJson<{ i18n?: { locales?: string[] } }>(
+        path.join(nextJsPath, ROUTES_MANIFEST),
+      )
+    ).i18n?.locales,
+  );
+
   const promises = Object.entries(prerenderManifest.routes).map(
     ([cachePath, { dataRoute, initialRevalidateSeconds }]) =>
       limit(async () => {
+        const storageKey = resolveStorageKey?.(cachePath) ?? cachePath;
+
         if (populatePages && dataRoute?.endsWith(".json")) {
-          await setPageCache(cachePath, "pages", initialRevalidateSeconds);
+          await setPageCache(
+            cachePath,
+            "pages",
+            initialRevalidateSeconds,
+            storageKey,
+          );
         } else if (populatePages && dataRoute?.endsWith(".rsc")) {
-          await setPageCache(cachePath, "app", initialRevalidateSeconds);
+          await setPageCache(
+            cachePath,
+            "app",
+            initialRevalidateSeconds,
+            storageKey,
+          );
         } else if (populateRoutes && dataRoute === null) {
-          await setRouteCache(cachePath, "app", initialRevalidateSeconds);
+          await setRouteCache(
+            cachePath,
+            "app",
+            initialRevalidateSeconds,
+            storageKey,
+          );
         }
       }),
   );

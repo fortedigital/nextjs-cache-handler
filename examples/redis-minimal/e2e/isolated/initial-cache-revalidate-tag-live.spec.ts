@@ -12,6 +12,7 @@ import {
   type IsolatedRedis,
   type IsolatedNextServer,
 } from "./helpers/isolated-server";
+import { cacheKeyFor } from "./helpers/cache-keys";
 
 // Bridges the exhaustive, direct-handler-level revalidateTag coverage in
 // redis-handler-revalidate-tag.spec.ts to the FULL real pipeline: Next.js's
@@ -31,9 +32,13 @@ test.describe("revalidateTag via the real /api/revalidate route deletes real Red
       env: { REDIS_URL: redis.url, REDIS_TYPE: "redis" },
     });
 
-    await waitForRedisPopulated(redis.url, ["/examples/fetch-tags"], {
-      timeoutMs: 60_000,
-    });
+    await waitForRedisPopulated(
+      redis.url,
+      [cacheKeyFor("/examples/fetch-tags")],
+      {
+        timeoutMs: 60_000,
+      },
+    );
     await waitForHttpReady(server.baseURL);
   });
 
@@ -48,9 +53,14 @@ test.describe("revalidateTag via the real /api/revalidate route deletes real Red
     try {
       // Precondition: confirm the entry is actually present before revalidating,
       // so the deletion we assert afterward is unambiguously caused by this call.
-      expect(await client.get("nextjs:/examples/fetch-tags")).not.toBeNull();
       expect(
-        await client.hExists("nextjs:__sharedTags__", "/examples/fetch-tags"),
+        await client.get(`nextjs:${cacheKeyFor("/examples/fetch-tags")}`),
+      ).not.toBeNull();
+      expect(
+        await client.hExists(
+          "nextjs:__sharedTags__",
+          cacheKeyFor("/examples/fetch-tags"),
+        ),
       ).toBe(1);
 
       const response = await fetch(`${server.baseURL}/api/revalidate`, {
@@ -64,16 +74,24 @@ test.describe("revalidateTag via the real /api/revalidate route deletes real Red
       // CacheHandler purge completes synchronously with the HTTP response -
       // poll rather than asserting immediately (confirmed empirically flaky
       // otherwise). See waitForRedisKeyDeleted's doc comment.
-      await waitForRedisKeyDeleted(redis.url, "nextjs:/examples/fetch-tags");
+      await waitForRedisKeyDeleted(
+        redis.url,
+        `nextjs:${cacheKeyFor("/examples/fetch-tags")}`,
+      );
 
-      expect(await client.get("nextjs:/examples/fetch-tags")).toBeNull();
       expect(
-        await client.hExists("nextjs:__sharedTags__", "/examples/fetch-tags"),
+        await client.get(`nextjs:${cacheKeyFor("/examples/fetch-tags")}`),
+      ).toBeNull();
+      expect(
+        await client.hExists(
+          "nextjs:__sharedTags__",
+          cacheKeyFor("/examples/fetch-tags"),
+        ),
       ).toBe(0);
       expect(
         await client.hExists(
           "nextjs:__sharedTagsTtl__",
-          "/examples/fetch-tags",
+          cacheKeyFor("/examples/fetch-tags"),
         ),
       ).toBe(0);
     } finally {

@@ -10,6 +10,7 @@ import {
   type IsolatedRedis,
   type IsolatedNextServer,
 } from "./helpers/isolated-server";
+import { cacheKeyFor } from "./helpers/cache-keys";
 
 // Routes whose presence in Redis can only be explained by `registerInitialCache`
 // having read build-time artifacts off disk - no HTTP request is made anywhere
@@ -44,9 +45,13 @@ test.describe("registerInitialCache populates Redis on boot (setOnlyIfNotExists=
       env: { REDIS_URL: redis.url, REDIS_TYPE: "redis" },
     });
 
-    await waitForRedisPopulated(redis.url, EXPECTED_CACHE_PATHS, {
-      timeoutMs: 60_000,
-    });
+    await waitForRedisPopulated(
+      redis.url,
+      EXPECTED_CACHE_PATHS.map(cacheKeyFor),
+      {
+        timeoutMs: 60_000,
+      },
+    );
   });
 
   test.afterAll(async () => {
@@ -69,7 +74,9 @@ test.describe("registerInitialCache populates Redis on boot (setOnlyIfNotExists=
     const client = createClient({ url: redis.url });
     await client.connect();
     try {
-      const value = await client.get("nextjs:/examples/default-cache");
+      const value = await client.get(
+        `nextjs:${cacheKeyFor("/examples/default-cache")}`,
+      );
       expect(value).not.toBeNull();
     } finally {
       await client.quit();
@@ -80,12 +87,14 @@ test.describe("registerInitialCache populates Redis on boot (setOnlyIfNotExists=
     const client = createClient({ url: redis.url });
     await client.connect();
     try {
-      const pageValue = await client.get("nextjs:/examples/fetch-tags");
+      const pageValue = await client.get(
+        `nextjs:${cacheKeyFor("/examples/fetch-tags")}`,
+      );
       expect(pageValue).not.toBeNull();
 
       const rawTags = await client.hGet(
         "nextjs:__sharedTags__",
-        "/examples/fetch-tags",
+        cacheKeyFor("/examples/fetch-tags"),
       );
       expect(rawTags).not.toBeNull();
       const tags = JSON.parse(rawTags ?? "[]");
@@ -99,10 +108,13 @@ test.describe("registerInitialCache populates Redis on boot (setOnlyIfNotExists=
     const client = createClient({ url: redis.url });
     await client.connect();
     try {
-      const value = await client.get("nextjs:/posts/1");
+      const value = await client.get(`nextjs:${cacheKeyFor("/posts/1")}`);
       expect(value).not.toBeNull();
 
-      const rawTags = await client.hGet("nextjs:__sharedTags__", "/posts/1");
+      const rawTags = await client.hGet(
+        "nextjs:__sharedTags__",
+        cacheKeyFor("/posts/1"),
+      );
       expect(rawTags).not.toBeNull();
       const tags = JSON.parse(rawTags ?? "[]");
       expect(tags).toContain("_N_T_/posts/1");
@@ -120,11 +132,12 @@ test.describe("registerInitialCache populates Redis on boot (setOnlyIfNotExists=
       const client = createClient({ url: redis.url });
       await client.connect();
       try {
-        const rawTtl = await client.hGet("nextjs:__sharedTagsTtl__", path);
+        const key = cacheKeyFor(path);
+        const rawTtl = await client.hGet("nextjs:__sharedTagsTtl__", key);
         expect(rawTtl).not.toBeNull();
         const expectedExpireAt = Number(rawTtl);
 
-        const expireTime = await client.expireTime(`nextjs:${path}`);
+        const expireTime = await client.expireTime(`nextjs:${key}`);
         expect(expireTime).toBe(expectedExpireAt);
         expect(expireTime).toBeGreaterThan(Math.floor(Date.now() / 1000));
       } finally {

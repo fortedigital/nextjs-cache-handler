@@ -4,6 +4,7 @@ import type { CacheHandler as NextCacheHandler } from "next/dist/server/lib/incr
 import { createValidatedAgeEstimationFunction } from "../helpers/createValidatedAgeEstimationFunction";
 import { getTagsFromHeaders } from "../helpers/getTagsFromHeaders";
 import { getImplicitPathTag } from "../helpers/getImplicitPathTag";
+import { getPathnameFromCacheKey } from "../helpers/routeCacheKey";
 import {
   CacheHandlerValue,
   FileSystemCacheContext,
@@ -718,12 +719,15 @@ export class CacheHandler implements NextCacheHandler {
         implicitTags: softTags ?? [],
       });
 
+    // Next.js 16.3.8+ passes route-scoped keys; disk lookups need the pathname.
+    const pathname = getPathnameFromCacheKey(cacheKey);
+
     if (
       !cachedData &&
       process.env.NEXT_PHASE === PHASE_PRODUCTION_BUILD &&
-      CacheHandler.#fallbackFalseRoutes.has(cacheKey)
+      CacheHandler.#fallbackFalseRoutes.has(pathname)
     ) {
-      cachedData = await CacheHandler.#readPagesRouterPage(cacheKey);
+      cachedData = await CacheHandler.#readPagesRouterPage(pathname);
 
       // if we have a value from the file system, we should set it to the cache store
       if (cachedData) {
@@ -769,7 +773,11 @@ export class CacheHandler implements NextCacheHandler {
 
     const lastModified = Math.round(internal_lastModified ?? Date.now());
 
-    const hasFallbackFalse = CacheHandler.#fallbackFalseRoutes.has(cacheKey);
+    // Next.js 16.3.8+ passes route-scoped keys; path tags and disk writes need
+    // the pathname (`revalidatePath('/posts/1')` emits `_N_T_/posts/1`).
+    const pathname = getPathnameFromCacheKey(cacheKey);
+
+    const hasFallbackFalse = CacheHandler.#fallbackFalseRoutes.has(pathname);
 
     const lifespan = CacheHandler.#getLifespanParameters(
       lastModified,
@@ -791,7 +799,7 @@ export class CacheHandler implements NextCacheHandler {
         break;
       }
       case "PAGES": {
-        const pathTag = getImplicitPathTag(cacheKey);
+        const pathTag = getImplicitPathTag(pathname);
         cacheHandlerValueTags = cacheHandlerValueTags.includes(pathTag)
           ? cacheHandlerValueTags
           : [...cacheHandlerValueTags, pathTag];
@@ -819,7 +827,7 @@ export class CacheHandler implements NextCacheHandler {
       cacheHandlerValue.value?.kind === "APP_PAGE"
     ) {
       await CacheHandler.#writePagesRouterPage(
-        cacheKey,
+        pathname,
         cacheHandlerValue.value as unknown as IncrementalCachedPageValue,
       );
     }
