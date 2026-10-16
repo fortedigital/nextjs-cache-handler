@@ -10,6 +10,10 @@ type RouteCacheOwner = {
 // that renders each path) so these expectations don't reuse the library's own
 // resolution logic.
 const OWNERS: Record<string, RouteCacheOwner> = {
+  "/": {
+    kind: "APP_PAGE",
+    sourceRoute: "/page",
+  },
   "/examples/default-cache": {
     kind: "APP_PAGE",
     sourceRoute: "/examples/default-cache/page",

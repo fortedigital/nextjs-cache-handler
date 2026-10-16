@@ -18,7 +18,7 @@ import { cacheKeyFor } from "./helpers/cache-keys";
 // route-scoped, so seeding under the bare pathname leaves Redis full of
 // entries Next.js never looks up - every request misses while the population
 // assertions still pass.
-const SEEDED_PATHS = ["/examples/default-cache", "/posts/1"];
+const SEEDED_PATHS = ["/", "/examples/default-cache", "/posts/1"];
 
 test.describe("Next.js serves registerInitialCache entries from Redis", () => {
   let redis: IsolatedRedis;
