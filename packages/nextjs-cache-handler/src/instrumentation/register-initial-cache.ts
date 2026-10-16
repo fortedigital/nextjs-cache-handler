@@ -29,6 +29,12 @@ type NextRouteMetadata = {
    * alongside the route's build artefacts (e.g. `/_tree`, `/_full`).
    */
   segmentPaths?: string[];
+  /**
+   * Route-scoped response cache key and owner (Next.js 16.3.8+).
+   */
+  routeCache?: {
+    key?: string;
+  };
 };
 
 type Router = "pages" | "app";
@@ -173,7 +179,8 @@ export async function registerInitialCache(
     dev: process.env.NODE_ENV === "development",
   };
 
-  const concurrency = options.parallelism ?? Math.max(4, os.availableParallelism());
+  const concurrency =
+    options.parallelism ?? Math.max(4, os.availableParallelism());
 
   // Two separate limiters sharing the same concurrency budget. Route-level
   // tasks (below) call into setPageCache, which itself needs to bound
@@ -262,7 +269,9 @@ export async function registerInitialCache(
         headers: meta.headers,
         status: meta.status,
       };
-      await cacheHandler.set(cachePath, value, {
+      const storageKey = meta.routeCache?.key ?? cachePath;
+
+      await cacheHandler.set(storageKey, value, {
         revalidate,
         internal_lastModified: lastModified,
         tags: getTagsFromHeaders(meta.headers),
@@ -367,7 +376,10 @@ export async function registerInitialCache(
           ? fsPromises
               .readFile(`${pathToRouteFiles}.meta`, "utf-8")
               .then((data) => JSON.parse(data) as NextRouteMetadata)
-          : undefined,
+          : fsPromises
+              .readFile(`${pathToRouteFiles}.meta`, "utf-8")
+              .then((data) => JSON.parse(data) as NextRouteMetadata)
+              .catch(() => undefined),
       ]);
     } catch (error) {
       if (debug) {
@@ -451,7 +463,9 @@ export async function registerInitialCache(
         segmentData,
       };
 
-      await cacheHandler.set(cachePath, value, {
+      const storageKey = meta?.routeCache?.key ?? cachePath;
+
+      await cacheHandler.set(storageKey, value, {
         revalidate,
         internal_lastModified: lastModified,
         setOnlyIfNotExists: setOnlyIfNotExists,

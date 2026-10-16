@@ -10,6 +10,7 @@ import {
   type IsolatedRedis,
   type IsolatedNextServer,
 } from "./helpers/isolated-server";
+import { cacheKeyFor } from "./helpers/cache-keys";
 
 // Control/counterfactual for initial-cache-set-only-if-not-exists.spec.ts:
 // that spec proves a pre-seeded key SURVIVES when setOnlyIfNotExists=true.
@@ -19,8 +20,8 @@ import {
 // regardless of the flag. This spec seeds the exact same keys and runs with
 // the flag left unset (default false), asserting they DO get overwritten -
 // ruling out (b) and isolating the flag as the actual cause.
-const SEEDED_APP_ROUTER_CACHE_PATH = "nextjs:/examples/default-cache";
-const SEEDED_PAGES_ROUTER_CACHE_PATH = "nextjs:/posts/1";
+const SEEDED_APP_ROUTER_CACHE_PATH = `nextjs:${cacheKeyFor("/examples/default-cache")}`;
+const SEEDED_PAGES_ROUTER_CACHE_PATH = `nextjs:${cacheKeyFor("/posts/1")}`;
 
 function makeSentinel(label: string) {
   return JSON.stringify({
@@ -56,7 +57,9 @@ test.describe("registerInitialCache with setOnlyIfNotExists left at its default 
 
     await waitForRedisPopulated(
       redis.url,
-      ["/examples/default-cache", "/examples/fetch-tags", "/posts/1"],
+      ["/examples/default-cache", "/examples/fetch-tags", "/posts/1"].map(
+        cacheKeyFor,
+      ),
       { timeoutMs: 60_000 },
     );
   });
