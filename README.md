@@ -181,9 +181,9 @@ We aim to keep up with new Next.js releases and will introduce major changes wit
 > **Fixed in 3.3.0.** If you are on Next.js 16.3.0 or later, upgrade to `@fortedigital/nextjs-cache-handler` 3.3.0+.
 
 > [!WARNING]
-> **Next.js 16.3.8+ route-scoped cache keys:** Starting with Next.js 16.3.8 (and 16.4.x), response cache entries (`APP_PAGE`, `APP_ROUTE`, `PAGES`) are stored under route-scoped keys (`/route-cache/<kind>/<hash>/$<path>`) rather than bare pathnames. Versions prior to **3.4.0** (or this release) seeded entries under pathnames, causing seeded initial cache entries to be missed at runtime.
+> **Next.js 16.3.8+ route-scoped cache keys:** Starting with Next.js 16.3.8 (and 16.4.x), response cache entries (`APP_PAGE`, `APP_ROUTE`, `PAGES`) are stored under route-scoped keys (`/route-cache/<kind>/<hash>/$<path>`) rather than bare pathnames. Earlier versions seeded initial cache entries under bare pathnames, causing them to be missed at runtime, and broke Pages Router `revalidatePath` invalidations.
 >
-> If you are on Next.js 16.3.8 or later, upgrade to `@fortedigital/nextjs-cache-handler` 3.4.0+.
+> If you are on Next.js 16.3.8 or later, upgrade to `@fortedigital/nextjs-cache-handler` with route-scoped key support.
 
 ### Feature Compatibility Matrix
 

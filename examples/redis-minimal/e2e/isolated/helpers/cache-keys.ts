@@ -51,5 +51,9 @@ export function cacheKeyFor(pathname: string): string {
   if (!owner) {
     throw new Error(`No owner recorded for ${pathname}`);
   }
-  return getRouteCacheKey ? getRouteCacheKey(pathname, owner) : pathname;
+  if (getRouteCacheKey) {
+    return getRouteCacheKey(pathname, owner);
+  }
+  // Before 16.3.8, Next normalises "/" to "/index" before calling the handler.
+  return pathname === "/" ? "/index" : pathname;
 }

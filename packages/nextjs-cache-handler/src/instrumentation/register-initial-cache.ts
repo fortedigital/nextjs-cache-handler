@@ -372,10 +372,14 @@ export async function registerInitialCache(
                 return undefined;
               })
           : undefined,
-        fsPromises
-          .readFile(`${pathToRouteFiles}.meta`, "utf-8")
-          .then((data) => JSON.parse(data) as NextRouteMetadata)
-          .catch(() => undefined),
+        isAppRouter
+          ? fsPromises
+              .readFile(`${pathToRouteFiles}.meta`, "utf-8")
+              .then((data) => JSON.parse(data) as NextRouteMetadata)
+          : fsPromises
+              .readFile(`${pathToRouteFiles}.meta`, "utf-8")
+              .then((data) => JSON.parse(data) as NextRouteMetadata)
+              .catch(() => undefined),
       ]);
     } catch (error) {
       if (debug) {
