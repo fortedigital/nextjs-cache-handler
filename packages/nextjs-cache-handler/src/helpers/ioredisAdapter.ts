@@ -124,6 +124,21 @@ export function ioredisAdapter(client: Redis): RedisClientType {
         return target.expireat.bind(target);
       }
 
+      if (prop === "eval") {
+        return async (
+          script: string,
+          options: { keys?: string[]; arguments?: string[] } = {},
+        ) => {
+          const keys = options.keys ?? [];
+          return target.eval(
+            script,
+            keys.length,
+            ...keys,
+            ...(options.arguments ?? []),
+          );
+        };
+      }
+
       if (prop === "hSet") {
         return target.hset.bind(target);
       }

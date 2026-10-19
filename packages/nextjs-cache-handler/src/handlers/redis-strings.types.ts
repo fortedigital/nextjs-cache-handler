@@ -12,7 +12,9 @@ import type { CacheHandlerValue } from "./cache-handler.types";
  */
 export type CacheValueSerializer = {
   serialize(value: CacheHandlerValue): string | Promise<string>;
-  deserialize(stored: string): CacheHandlerValue | null | Promise<CacheHandlerValue | null>;
+  deserialize(
+    stored: string,
+  ): CacheHandlerValue | null | Promise<CacheHandlerValue | null>;
 };
 
 export type RedisCompliantCachedRouteValue = {
@@ -79,6 +81,13 @@ export type CreateRedisStringsHandlerOptions<
    * @default '__sharedTagsTtl__'
    */
   sharedTagsTtlKey?: string;
+  /**
+   * Optional inactivity TTL, in seconds, for handler-owned metadata hash keys.
+   * Each metadata write atomically refreshes the containing hash key's expiry.
+   * Keep this value longer than the maximum lifetime of any cache entry that
+   * depends on the metadata.
+   */
+  metadataKeysExpirationSeconds?: number;
   /**
    * Determines the expiration strategy for cache keys.
    *
