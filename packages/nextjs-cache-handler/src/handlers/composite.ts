@@ -43,8 +43,10 @@ export default function createHandler({
       await handler.set(key, data, ctx);
     },
 
-    async revalidateTag(tag) {
-      await Promise.all(handlers.map((handler) => handler.revalidateTag(tag)));
+    async revalidateTag(tag, durations) {
+      await Promise.all(
+        handlers.map((handler) => handler.revalidateTag(tag, durations)),
+      );
     },
 
     async delete(key) {

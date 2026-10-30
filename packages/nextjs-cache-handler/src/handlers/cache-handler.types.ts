@@ -39,6 +39,19 @@ export type LifespanParameters = {
 
 export type Revalidate = false | number;
 
+/**
+ * Durations for a tag revalidation, resolved by Next.js from the cache life
+ * profile passed to `revalidateTag(tag, profile)` or `revalidatePath`.
+ *
+ * `expire` is the number of seconds after which entries associated with the
+ * tag must be considered expired. A large value (e.g. from the `max` profile)
+ * means the entries should be marked stale while still being servable, whereas
+ * `expire: 0` means they must expire immediately.
+ *
+ * May be `undefined` when Next.js does not resolve a profile for the call.
+ */
+export type RevalidateTagDurations = CacheHandlerParametersRevalidateTag[1];
+
 export type CacheHandlerParametersGet = Parameters<NextCacheHandler["get"]>;
 
 export type CacheHandlerParametersGetWithTags = [
@@ -164,8 +177,17 @@ export type Handler = {
    *
    * @param tag - A string representing the cache tag associated with the data you want to revalidate.
    * Must be less than or equal to 256 characters. This value is case-sensitive.
+   *
+   * @param durations - Optional durations resolved by Next.js from the cache life profile
+   * passed to `revalidateTag(tag, profile)` or `revalidatePath`. See {@link RevalidateTagDurations}.
+   * Handlers that support stale-while-revalidate semantics may use `durations.expire`
+   * to decide whether to expire entries immediately or keep serving them while regenerating.
+   * When omitted, entries should be treated as expired immediately.
    */
-  revalidateTag: (tag: string) => Promise<void>;
+  revalidateTag: (
+    tag: string,
+    durations?: RevalidateTagDurations,
+  ) => Promise<void>;
   /**
    * Deletes the cache entry associated with the given key from the cache store.
    * This method is optional and supposed to be used only when the cache store does not support time based key eviction.
@@ -345,7 +367,10 @@ declare class CacheHandler implements NextCacheHandler {
       internal_lastModified?: number;
     },
   ): Promise<void>;
-  revalidateTag(tag: CacheHandlerParametersRevalidateTag[0]): Promise<void>;
+  revalidateTag(
+    tag: CacheHandlerParametersRevalidateTag[0],
+    durations?: RevalidateTagDurations,
+  ): Promise<void>;
   resetRequestCache(): void;
 }
 export type CacheHandlerParametersSet = Parameters<NextCacheHandler["set"]>;
